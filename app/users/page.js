@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { Search, Mail, UserCog } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import StyledSelect from '@/components/shared/StyledSelect'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -28,6 +29,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('All')
+  const [availableRoles, setAvailableRoles] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [loadingUserDetails, setLoadingUserDetails] = useState(false)
@@ -42,6 +44,25 @@ export default function UsersPage() {
   const [customLimit, setCustomLimit] = useState('')
   const [showCustomLimit, setShowCustomLimit] = useState(false)
   const toast = useToast()
+
+  // Load available roles on mount
+  useEffect(() => {
+    loadRoles()
+  }, [])
+
+  async function loadRoles() {
+    try {
+      const result = await api.get('/api/role?limit=1000')
+      if (result.success) {
+        const roles = result.data || []
+        // Extract unique role names
+        const uniqueRoles = [...new Set(roles.map(r => r.role))].sort()
+        setAvailableRoles(uniqueRoles)
+      }
+    } catch (e) {
+      console.error('Failed to load roles:', e)
+    }
+  }
 
   // Debounce search query
   useEffect(() => {
@@ -88,9 +109,14 @@ export default function UsersPage() {
         
         // Apply role filter client-side if needed
         if (roleFilter !== 'All') {
-          users = users.filter(user => 
-            user.role?.toLowerCase() === roleFilter.toLowerCase()
-          )
+          users = users.filter(user => {
+            const userRole = user.role?.trim().toLowerCase() || ''
+            const filterRole = roleFilter.trim().toLowerCase()
+            // Normalize spaces: replace multiple spaces with single space for comparison
+            const normalizedUserRole = userRole.replace(/\s+/g, ' ')
+            const normalizedFilterRole = filterRole.replace(/\s+/g, ' ')
+            return normalizedUserRole === normalizedFilterRole
+          })
         }
         
         // Client-side pagination if role filter is applied
@@ -107,9 +133,13 @@ export default function UsersPage() {
           const totalItems = result.pagination.total || 0
           // If role filter applied, count filtered items
           const filteredTotal = roleFilter !== 'All' 
-            ? (result.data || []).filter(user => 
-                user.role?.toLowerCase() === roleFilter.toLowerCase()
-              ).length
+            ? (result.data || []).filter(user => {
+                const userRole = user.role?.trim().toLowerCase() || ''
+                const filterRole = roleFilter.trim().toLowerCase()
+                const normalizedUserRole = userRole.replace(/\s+/g, ' ')
+                const normalizedFilterRole = filterRole.replace(/\s+/g, ' ')
+                return normalizedUserRole === normalizedFilterRole
+              }).length
             : totalItems
           
           setTotal(filteredTotal)
@@ -204,42 +234,43 @@ export default function UsersPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select 
-            value={roleFilter} 
-            onChange={(e) => {
-              setRoleFilter(e.target.value)
+          <StyledSelect
+            value={roleFilter}
+            onChange={(value) => {
+              setRoleFilter(value)
               setCurrentPage(1) // Reset to first page when filter changes
-            }} 
+            }}
+            options={[
+              { value: 'All', label: 'All Roles' },
+              ...availableRoles.map(role => ({ value: role, label: role }))
+            ]}
+            placeholder="All Roles"
             className="w-full sm:w-48"
-          >
-            <option value="All">All Roles</option>
-            <option value="Super Admin">Super Admin</option>
-            <option value="Admin">Admin</option>
-            <option value="Staff">Staff</option>
-            <option value="Teacher">Teacher</option>
-          </Select>
+          />
           <div className="relative w-full sm:w-40">
             {!showCustomLimit ? (
-              <Select 
-                value={[10, 20, 50, 100].includes(limit) ? limit.toString() : 'custom'} 
-                onChange={(e) => {
-                  if (e.target.value === 'custom') {
+              <StyledSelect
+                value={[10, 20, 50, 100].includes(limit) ? limit.toString() : 'custom'}
+                onChange={(value) => {
+                  if (value === 'custom') {
                     setShowCustomLimit(true)
                     setCustomLimit(limit.toString())
                   } else {
-                    const newLimit = parseInt(e.target.value)
+                    const newLimit = parseInt(value)
                     setLimit(newLimit)
                     setCurrentPage(1)
                   }
-                }} 
+                }}
+                options={[
+                  { value: '10', label: '10 per page' },
+                  { value: '20', label: '20 per page' },
+                  { value: '50', label: '50 per page' },
+                  { value: '100', label: '100 per page' },
+                  { value: 'custom', label: `${limit} per page (custom)` }
+                ]}
+                placeholder="10 per page"
                 className="w-full"
-              >
-                <option value="10">10 per page</option>
-                <option value="20">20 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-                <option value="custom">{limit} per page (custom)</option>
-              </Select>
+              />
             ) : (
               <div className="flex items-center gap-2">
                 <Input
@@ -299,8 +330,7 @@ export default function UsersPage() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
-            <p className="text-slate-500 mt-4">Loading users...</p>
+            <LoadingSpinner size="md" text="Loading users..." />
           </div>
         )}
 
@@ -419,7 +449,7 @@ export default function UsersPage() {
             </DialogHeader>
             {loadingUserDetails ? (
               <div className="flex items-center justify-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+                <LoadingSpinner size="md" />
                 <p className="text-slate-500 ml-4">Loading user details...</p>
               </div>
             ) : selectedUser ? (

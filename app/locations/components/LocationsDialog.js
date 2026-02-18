@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Building2 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
+import StatusSelector from '@/components/shared/StatusSelector'
 
 export default function LocationsDialog({ open, onClose, locations = [], onRefresh, initialLocationId = null }) {
   const [editingLocation, setEditingLocation] = useState(null)
@@ -95,6 +95,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
           toast.success({ title: 'Saved', message: 'Location updated' })
           closeEdit()
           onRefresh && onRefresh()
+          onClose?.()
         } else {
           toast.error({ title: 'Save failed', message: result.error || 'Unable to update location' })
         }
@@ -114,6 +115,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
           toast.success({ title: 'Created', message: 'Location created' })
           closeEdit()
           onRefresh && onRefresh()
+          onClose?.()
         } else {
           toast.error({ title: 'Create failed', message: result.error || 'Unable to create location' })
         }
@@ -228,13 +230,11 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
-                  <Select 
-                    value={editingLocation.status || 'active'} 
-                    onChange={(e) => setEditingLocation((p) => ({ ...p, status: e.target.value }))}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </Select>
+                  <StatusSelector
+                    value={editingLocation.status || 'active'}
+                    onChange={(status) => setEditingLocation((p) => ({ ...p, status }))}
+                    placeholder="Select status"
+                  />
                 </div>
               </div>
             </div>
@@ -250,10 +250,6 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
             </div>
           </div>
         )}
-
-        <DialogFooter className="mt-6 pt-4 border-t border-slate-200">
-          <Button variant="ghost" onClick={onClose}>Close</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

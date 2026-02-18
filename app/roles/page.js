@@ -4,8 +4,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { Search, Shield, Edit, Trash } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import StyledSelect from '@/components/shared/StyledSelect'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import api from '@/lib/api'
@@ -174,26 +175,28 @@ export default function RolesPage() {
           </div>
           <div className="relative w-full sm:w-40">
             {!showCustomLimit ? (
-              <Select
+              <StyledSelect
                 value={[10, 20, 50, 100].includes(limit) ? limit.toString() : 'custom'}
-                onChange={(e) => {
-                  if (e.target.value === 'custom') {
+                onChange={(value) => {
+                  if (value === 'custom') {
                     setShowCustomLimit(true)
                     setCustomLimit(limit.toString())
                   } else {
-                    const newLimit = parseInt(e.target.value, 10)
+                    const newLimit = parseInt(value, 10)
                     setLimit(newLimit)
                     setCurrentPage(1)
                   }
                 }}
+                options={[
+                  { value: '10', label: '10 per page' },
+                  { value: '20', label: '20 per page' },
+                  { value: '50', label: '50 per page' },
+                  { value: '100', label: '100 per page' },
+                  { value: 'custom', label: `${limit} per page (custom)` }
+                ]}
+                placeholder="10 per page"
                 className="w-full"
-              >
-                <option value="10">10 per page</option>
-                <option value="20">20 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-                <option value="custom">{limit} per page (custom)</option>
-              </Select>
+              />
             ) : (
               <div className="flex items-center gap-2">
                 <Input
@@ -256,8 +259,7 @@ export default function RolesPage() {
         {/* Loading */}
         {loading && (
           <div className="py-12 text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-            <p className="mt-4 text-slate-500">Loading roles...</p>
+            <LoadingSpinner size="md" text="Loading roles..." />
           </div>
         )}
 
@@ -368,7 +370,7 @@ export default function RolesPage() {
             </DialogHeader>
             {loadingRoleDetails ? (
               <div className="flex items-center justify-center py-12">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                <LoadingSpinner size="md" />
                 <p className="ml-4 text-slate-500">Loading role details...</p>
               </div>
             ) : selectedRole ? (

@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserPlus, X } from 'lucide-react'
 import LocationSelector from '@/components/shared/LocationSelector'
+import RoleSelector from '@/components/shared/RoleSelector'
+import StatusSelector from '@/components/shared/StatusSelector'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
@@ -70,6 +71,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
           toast.success({ title: 'Saved', message: 'User updated' })
           closeEdit()
           onRefresh && onRefresh()
+          onClose?.()
         } else {
           toast.error({ title: 'Save failed', message: result.error || 'Unable to update user' })
         }
@@ -80,6 +82,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
           toast.success({ title: 'Created', message: 'User created' })
           closeEdit()
           onRefresh && onRefresh()
+          onClose?.()
         } else {
           toast.error({ title: 'Create failed', message: result.error || 'Unable to create user' })
         }
@@ -149,11 +152,10 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Role *</label>
-                  <Input 
-                    value={editingUser.role || ''} 
-                    onChange={(e) => setEditingUser((p) => ({ ...p, role: e.target.value }))} 
-                    placeholder="e.g., Admin, Staff, Teacher" 
-                    required 
+                  <RoleSelector
+                    value={editingUser.role}
+                    onChange={(role) => setEditingUser((p) => ({ ...p, role }))}
+                    placeholder="Select role"
                   />
                 </div>
               </div>
@@ -185,13 +187,11 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
               )}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
-                <Select 
-                  value={editingUser.status || 'active'} 
-                  onChange={(e) => setEditingUser((p) => ({ ...p, status: e.target.value }))}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </Select>
+                <StatusSelector
+                  value={editingUser.status || 'active'}
+                  onChange={(status) => setEditingUser((p) => ({ ...p, status }))}
+                  placeholder="Select status"
+                />
               </div>
             </div>
 
@@ -206,10 +206,6 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
             </div>
           </div>
         )}
-
-        <DialogFooter className="mt-6 pt-4 border-t border-slate-200">
-          <Button variant="ghost" onClick={onClose}>Close</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

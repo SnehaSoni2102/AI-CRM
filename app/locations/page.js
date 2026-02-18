@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { Search, Building2, MapPin, Phone, Mail } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import StyledSelect from '@/components/shared/StyledSelect'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import LocationsDialog from '@/app/locations/components/LocationsDialog'
@@ -192,40 +193,44 @@ export default function LocationsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select 
-            value={statusFilter} 
-            onChange={(e) => {
-              setStatusFilter(e.target.value)
+          <StyledSelect
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value)
               setCurrentPage(1) // Reset to first page when filter changes
-            }} 
+            }}
+            options={[
+              { value: 'All', label: 'All Status' },
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' }
+            ]}
+            placeholder="All Status"
             className="w-full sm:w-48"
-          >
-            <option value="All">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </Select>
+          />
           <div className="relative w-full sm:w-40">
             {!showCustomLimit ? (
-              <Select 
-                value={[10, 20, 50, 100].includes(limit) ? limit.toString() : 'custom'} 
-                onChange={(e) => {
-                  if (e.target.value === 'custom') {
+              <StyledSelect
+                value={[10, 20, 50, 100].includes(limit) ? limit.toString() : 'custom'}
+                onChange={(value) => {
+                  if (value === 'custom') {
                     setShowCustomLimit(true)
                     setCustomLimit(limit.toString())
                   } else {
-                    const newLimit = parseInt(e.target.value)
+                    const newLimit = parseInt(value)
                     setLimit(newLimit)
                     setCurrentPage(1)
                   }
-                }} 
+                }}
+                options={[
+                  { value: '10', label: '10 per page' },
+                  { value: '20', label: '20 per page' },
+                  { value: '50', label: '50 per page' },
+                  { value: '100', label: '100 per page' },
+                  { value: 'custom', label: `${limit} per page (custom)` }
+                ]}
+                placeholder="10 per page"
                 className="w-full"
-              >
-                <option value="10">10 per page</option>
-                <option value="20">20 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-                <option value="custom">{limit} per page (custom)</option>
-              </Select>
+              />
             ) : (
               <div className="flex items-center gap-2">
                 <Input
@@ -285,8 +290,7 @@ export default function LocationsPage() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
-            <p className="text-slate-500 mt-4">Loading locations...</p>
+            <LoadingSpinner size="md" text="Loading locations..." />
           </div>
         )}
 
@@ -420,7 +424,7 @@ export default function LocationsPage() {
             </DialogHeader>
             {loadingLocationDetails ? (
               <div className="flex items-center justify-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+                <LoadingSpinner size="md" />
                 <p className="text-slate-500 ml-4">Loading location details...</p>
               </div>
             ) : selectedLocation ? (

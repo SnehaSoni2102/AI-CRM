@@ -1,23 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Building2, ChevronDown } from 'lucide-react'
+import { UserCog, ChevronDown } from 'lucide-react'
 import api from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 /**
- * Reusable Location Selector Component
- * Fetches locations from API and provides a dropdown selector
+ * Reusable Role Selector Component
+ * Fetches roles from API and provides a dropdown selector
  */
-export default function LocationSelector({ 
+export default function RoleSelector({ 
   value, 
   onChange, 
-  placeholder = 'Select location...',
-  showAllOption = false,
-  filterActiveOnly = true,
+  placeholder = 'Select role...',
   className = ''
 }) {
-  const [locations, setLocations] = useState([])
+  const [roles, setRoles] = useState([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
@@ -25,7 +23,7 @@ export default function LocationSelector({
   const dropdownRef = useRef(null)
 
   useEffect(() => {
-    loadLocations()
+    loadRoles()
   }, [])
 
   useEffect(() => {
@@ -54,28 +52,23 @@ export default function LocationSelector({
     }
   }, [open])
 
-  async function loadLocations() {
+  async function loadRoles() {
     try {
       setLoading(true)
-      const result = await api.get('/api/location')
+      // Fetch all roles with a high limit to get all roles for dropdown
+      const result = await api.get('/api/role?limit=1000')
       if (result.success) {
-        let locs = result.data || []
-        
-        // Filter active only if requested
-        if (filterActiveOnly) {
-          locs = locs.filter(loc => loc.status?.toLowerCase() === 'active')
-        }
-        
-        setLocations(locs)
+        const rolesData = result.data || []
+        setRoles(rolesData)
       }
     } catch (e) {
-      console.error('Failed to load locations:', e)
+      console.error('Failed to load roles:', e)
     } finally {
       setLoading(false)
     }
   }
 
-  const selectedLocation = locations.find(loc => loc._id === value)
+  const selectedRole = roles.find(role => role.role === value)
 
   return (
     <div className={cn('relative', className)}>
@@ -92,12 +85,12 @@ export default function LocationSelector({
         disabled={loading}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
-          <span className={cn('truncate', !selectedLocation && 'text-slate-400')}>
+          <UserCog className="h-4 w-4 text-slate-400 shrink-0" />
+          <span className={cn('truncate', !selectedRole && 'text-slate-400')}>
             {loading 
               ? 'Loading...' 
-              : selectedLocation 
-                ? selectedLocation.name 
+              : selectedRole 
+                ? selectedRole.role 
                 : placeholder}
           </span>
         </div>
@@ -119,53 +112,27 @@ export default function LocationSelector({
               width: `${dropdownPosition.width}px`
             }}
           >
-            {showAllOption && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(null)
-                    setOpen(false)
-                  }}
-                  className={cn(
-                    'w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors',
-                    !value && 'bg-brand/10 text-brand font-medium'
-                  )}
-                >
-                  <Building2 className="h-4 w-4 text-slate-400" />
-                  <span>No Location</span>
-                </button>
-                <div className="h-px bg-slate-200 my-1" />
-              </>
-            )}
-            {locations.length === 0 ? (
+            {roles.length === 0 ? (
               <div className="px-3 py-4 text-sm text-center text-slate-500">
-                {loading ? 'Loading locations...' : 'No locations available'}
+                {loading ? 'Loading roles...' : 'No roles available'}
               </div>
             ) : (
-              locations.map((location) => (
+              roles.map((role) => (
                 <button
-                  key={location._id}
+                  key={role._id}
                   type="button"
                   onClick={() => {
-                    onChange(location._id)
+                    onChange(role.role)
                     setOpen(false)
                   }}
                   className={cn(
                     'w-full flex items-start gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors',
-                    value === location._id && 'bg-brand/10 text-brand font-medium'
+                    value === role.role && 'bg-brand/10 text-brand font-medium'
                   )}
                 >
-                  <Building2 className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+                  <UserCog className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{location.name}</div>
-                    {(location.city || location.state) && (
-                      <div className="text-xs text-slate-500 truncate">
-                        {location.city && location.state 
-                          ? `${location.city}, ${location.state}` 
-                          : location.city || location.state}
-                      </div>
-                    )}
+                    <div className="font-medium truncate">{role.role}</div>
                   </div>
                 </button>
               ))
