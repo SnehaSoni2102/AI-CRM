@@ -1,8 +1,13 @@
 'use client'
 
-import { ToastProvider } from '@/components/ui/toast'
+import { Toaster } from 'sonner'
 
 export default function Providers({ children }) {
-  return <ToastProvider>{children}</ToastProvider>
+  return (
+    <>
+      {children}
+      <Toaster position="top-right" richColors />
+    </>
+  )
 }
 

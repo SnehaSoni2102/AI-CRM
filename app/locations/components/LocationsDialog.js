@@ -5,29 +5,48 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Building2 } from 'lucide-react'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
-import { cn } from '@/lib/utils'
 
 export default function LocationsDialog({ open, onClose, locations = [], onRefresh, initialLocationId = null }) {
   const [editingLocation, setEditingLocation] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState('create') // 'create' or 'edit'
   const toast = useToast()
 
   useEffect(() => {
     if (!open) {
       setEditingLocation(null)
+      setMode('create')
       return
     }
     // if an initial location id was provided, pre-select that location for editing
     if (initialLocationId && locations && locations.length > 0) {
       const found = locations.find((l) => l._id === initialLocationId)
-      if (found) setEditingLocation({ ...found })
+      if (found) {
+        setEditingLocation({ ...found })
+        setMode('edit')
+      }
+    } else {
+      // create mode: show form immediately with empty fields
+      setEditingLocation({
+        name: '',
+        address: '',
+        city: '',
+        state: '',
+        country: '',
+        phoneNumber: '',
+        email: '',
+        status: 'active',
+      })
+      setMode('create')
     }
   }, [open, initialLocationId, locations])
 
   function openEdit(location) {
     setEditingLocation({ ...location })
+    setMode('edit')
   }
 
   function openCreate() {
@@ -41,10 +60,12 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
       email: '', 
       status: 'active' 
     })
+    setMode('create')
   }
 
   function closeEdit() {
     setEditingLocation(null)
+    setMode('create')
   }
 
   async function saveLocation() {
@@ -106,106 +127,132 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl">
-      <DialogContent onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="2xl">
+      <DialogContent onClose={onClose} className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Manage Locations</DialogTitle>
-          <DialogDescription>View and update locations in this organisation.</DialogDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-2xl">{mode === 'create' ? 'Create New Location' : 'Edit Location'}</DialogTitle>
+              <DialogDescription className="mt-1">
+                {mode === 'create' ? 'Add a new branch or location to your organization' : 'Update location information'}
+              </DialogDescription>
+            </div>
+            {mode === 'edit' && (
+              <Button variant="ghost" size="sm" onClick={openCreate} className="gap-2">
+                <Building2 className="h-4 w-4" />
+                New Location
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="md:col-span-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-semibold">Locations</h4>
-              <Button size="sm" onClick={openCreate}>New</Button>
-            </div>
-            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-              {locations.map((l) => (
-                <div 
-                  key={l._id} 
-                  className={cn(
-                    "p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors",
-                    editingLocation?._id === l._id && "bg-brand/10 border border-brand/20"
-                  )} 
-                  onClick={() => openEdit(l)}
-                >
-                  <div className="font-medium">{l.name}</div>
-                  <div className="text-xs text-slate-400">{l.city && l.state ? `${l.city}, ${l.state}` : l.address}</div>
-                  <div className="text-xs text-slate-500 capitalize">{l.status || 'active'}</div>
+        {editingLocation && (
+          <div className="space-y-6 mt-6">
+            {/* Basic Information Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Location Name *</label>
+                  <Input 
+                    value={editingLocation.name || ''} 
+                    onChange={(e) => setEditingLocation((p) => ({ ...p, name: e.target.value }))} 
+                    placeholder="e.g., Downtown Branch" 
+                    required
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="md:col-span-2">
-            {!editingLocation && (
-              <div className="text-sm text-slate-500">Select a location to edit or create a new location.</div>
-            )}
-            {editingLocation && (
-              <div className="space-y-3">
-                <Input 
-                  value={editingLocation.name || ''} 
-                  onChange={(e) => setEditingLocation((p) => ({ ...p, name: e.target.value }))} 
-                  placeholder="Location Name *" 
-                  required
-                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Email *</label>
+                  <Input 
+                    value={editingLocation.email || ''} 
+                    onChange={(e) => setEditingLocation((p) => ({ ...p, email: e.target.value }))} 
+                    placeholder="location@example.com" 
+                    type="email"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Street Address *</label>
                 <Input 
                   value={editingLocation.address || ''} 
                   onChange={(e) => setEditingLocation((p) => ({ ...p, address: e.target.value }))} 
-                  placeholder="Address *" 
+                  placeholder="123 Main Street" 
                   required
                 />
-                <div className="grid grid-cols-2 gap-3">
+              </div>
+            </div>
+
+            {/* Address Details Section */}
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Address Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
                   <Input 
                     value={editingLocation.city || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, city: e.target.value }))} 
                     placeholder="City" 
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
                   <Input 
                     value={editingLocation.state || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, state: e.target.value }))} 
                     placeholder="State" 
                   />
                 </div>
-                <Input 
-                  value={editingLocation.country || ''} 
-                  onChange={(e) => setEditingLocation((p) => ({ ...p, country: e.target.value }))} 
-                  placeholder="Country" 
-                />
-                <Input 
-                  value={editingLocation.email || ''} 
-                  onChange={(e) => setEditingLocation((p) => ({ ...p, email: e.target.value }))} 
-                  placeholder="Email *" 
-                  type="email"
-                  required
-                />
-                <Input 
-                  value={editingLocation.phoneNumber || ''} 
-                  onChange={(e) => setEditingLocation((p) => ({ ...p, phoneNumber: e.target.value }))} 
-                  placeholder="Phone Number" 
-                />
-                <Select 
-                  value={editingLocation.status || 'active'} 
-                  onChange={(e) => setEditingLocation((p) => ({ ...p, status: e.target.value }))}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </Select>
-                <div className="flex items-center gap-2 pt-2">
-                  <Button onClick={saveLocation} variant="gradient" disabled={loading}>
-                    {loading ? 'Saving...' : 'Save'}
-                  </Button>
-                  <Button variant="ghost" onClick={closeEdit}>Cancel</Button>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Country</label>
+                  <Input 
+                    value={editingLocation.country || ''} 
+                    onChange={(e) => setEditingLocation((p) => ({ ...p, country: e.target.value }))} 
+                    placeholder="Country" 
+                  />
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        <DialogFooter>
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={onClose}>Close</Button>
+            {/* Contact & Status Section */}
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Contact & Status</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                  <Input 
+                    value={editingLocation.phoneNumber || ''} 
+                    onChange={(e) => setEditingLocation((p) => ({ ...p, phoneNumber: e.target.value }))} 
+                    placeholder="(555) 123-4567" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                  <Select 
+                    value={editingLocation.status || 'active'} 
+                    onChange={(e) => setEditingLocation((p) => ({ ...p, status: e.target.value }))}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+              <Button variant="ghost" onClick={closeEdit} disabled={loading}>
+                Cancel
+              </Button>
+              <Button onClick={saveLocation} variant="gradient" disabled={loading}>
+                {loading ? 'Saving...' : mode === 'create' ? 'Create Location' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
+        )}
+
+        <DialogFooter className="mt-6 pt-4 border-t border-slate-200">
+          <Button variant="ghost" onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
