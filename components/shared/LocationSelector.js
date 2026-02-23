@@ -15,7 +15,8 @@ export default function LocationSelector({
   placeholder = 'Select location...',
   showAllOption = false,
   filterActiveOnly = true,
-  className = ''
+  className = '',
+  multiple = false,
 }) {
   const [locations, setLocations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -75,7 +76,10 @@ export default function LocationSelector({
     }
   }
 
-  const selectedLocation = locations.find(loc => loc._id === value)
+  const isMultiple = multiple || Array.isArray(value)
+  const selectedLocations = isMultiple
+    ? locations.filter((loc) => (value || []).includes(loc._id))
+    : locations.find((loc) => loc._id === value)
 
   return (
     <div className={cn('relative', className)}>
@@ -91,14 +95,16 @@ export default function LocationSelector({
         )}
         disabled={loading}
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
           <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
-          <span className={cn('truncate', !selectedLocation && 'text-slate-400')}>
-            {loading 
-              ? 'Loading...' 
-              : selectedLocation 
-                ? selectedLocation.name 
-                : placeholder}
+          <span className={cn('truncate', ((!selectedLocations || (isMultiple && selectedLocations.length === 0)) && 'text-slate-400'))}>
+            {loading
+              ? 'Loading...'
+              : isMultiple
+                ? (selectedLocations && selectedLocations.length > 0
+                    ? selectedLocations.map((s) => s.name).join(', ')
+                    : placeholder)
+                : (selectedLocations ? selectedLocations.name : placeholder)}
           </span>
         </div>
         <ChevronDown className={cn('h-4 w-4 text-slate-400 shrink-0 transition-transform', open && 'rotate-180')} />
@@ -124,12 +130,12 @@ export default function LocationSelector({
                 <button
                   type="button"
                   onClick={() => {
-                    onChange(null)
+                    onChange(isMultiple ? [] : null)
                     setOpen(false)
                   }}
                   className={cn(
                     'w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors',
-                    !value && 'bg-brand/10 text-brand font-medium'
+                    ((!isMultiple && !value) || (isMultiple && (!value || value.length === 0))) && 'bg-brand/10 text-brand font-medium'
                   )}
                 >
                   <Building2 className="h-4 w-4 text-slate-400" />
@@ -148,12 +154,21 @@ export default function LocationSelector({
                   key={location._id}
                   type="button"
                   onClick={() => {
-                    onChange(location._id)
-                    setOpen(false)
+                    if (isMultiple) {
+                      const current = Array.isArray(value) ? [...value] : []
+                      const idx = current.indexOf(location._id)
+                      if (idx > -1) current.splice(idx, 1)
+                      else current.push(location._id)
+                      onChange(current)
+                      // keep dropdown open to allow multiple selection
+                    } else {
+                      onChange(location._id)
+                      setOpen(false)
+                    }
                   }}
                   className={cn(
                     'w-full flex items-start gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors',
-                    value === location._id && 'bg-brand/10 text-brand font-medium'
+                    (isMultiple ? (value || []).includes(location._id) : value === location._id) && 'bg-brand/10 text-brand font-medium'
                   )}
                 >
                   <Building2 className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
@@ -167,6 +182,9 @@ export default function LocationSelector({
                       </div>
                     )}
                   </div>
+                  {isMultiple && (value || []).includes(location._id) && (
+                    <div className="ml-2 text-sm text-brand">✓</div>
+                  )}
                 </button>
               ))
             )}

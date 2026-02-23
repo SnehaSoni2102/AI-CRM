@@ -34,7 +34,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
       }
     } else {
       // create mode: show form immediately with empty fields
-      setEditingUser({ name: '', email: '', role: '', password: '', locationID: null, phoneNumber: '', status: 'active' })
+      setEditingUser({ name: '', email: '', role: '', password: '', locationID: [], phoneNumber: '', status: 'active' })
       setMode('create')
     }
   }, [open, initialUserId, users])
@@ -45,7 +45,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
   }
 
   function openCreate() {
-    setEditingUser({ name: '', email: '', role: '', password: '', locationID: null, phoneNumber: '', status: 'active' })
+    setEditingUser({ name: '', email: '', role: '', password: '', locationID: [], phoneNumber: '', status: 'active' })
     setMode('create')
   }
 
@@ -63,7 +63,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
         const result = await api.put(`/api/user/${editingUser._id}`, {
           name: editingUser.name,
           role: editingUser.role,
-          locationID: editingUser.locationID || null,
+          locationID: editingUser.locationID || [],
           phoneNumber: editingUser.phoneNumber || null,
           status: editingUser.status || 'active',
         })
@@ -167,9 +167,10 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
                 <LocationSelector
+                  multiple={true}
                   value={editingUser.locationID}
-                  onChange={(locationId) => setEditingUser((p) => ({ ...p, locationID: locationId }))}
-                  placeholder="Select location (optional)"
+                  onChange={(locationIds) => setEditingUser((p) => ({ ...p, locationID: locationIds }))}
+                  placeholder="Select location(s) (optional)"
                   showAllOption={true}
                 />
               </div>
