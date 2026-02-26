@@ -336,11 +336,11 @@ export default function Header({ title, subtitle, onMenuClick }) {
             <div className="h-[38px] w-[38px] rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600">
               {user ? getInitials(user.name) : '?'}
             </div>
-            <div className="flex flex-col hidden sm:block">
-              <span className="text-sm text-[#050312] leading-tight">
+            <div className="flex flex-col min-w-0 max-w-[140px] sm:max-w-none">
+              <span className="text-sm text-[#050312] leading-tight truncate">
                 {user ? `Hi, ${user.name}` : 'Hi, User'}
               </span>
-              <span className="text-xs text-[#94A3B8] leading-tight mt-0.5">
+              <span className="text-xs text-[#94A3B8] leading-tight mt-0.5 truncate">
                 {user?.email || '—'}
               </span>
             </div>
