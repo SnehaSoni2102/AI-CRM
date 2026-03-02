@@ -1,6 +1,6 @@
- 'use client'
+'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import MainLayout from '@/components/layout/MainLayout'
 import ContactList from '@/app/inbox/components/ContactList'
@@ -21,7 +21,7 @@ function normalizeContactType(type) {
   return type
 }
 
-export default function InboxPage() {
+function InboxPageContent() {
   const searchParams = useSearchParams()
   const { setInboxTeachersCount } = useInboxHeader()
   const [selectedConversation, setSelectedConversation] = useState(null)
@@ -149,5 +149,17 @@ export default function InboxPage() {
         )}
       </div>
     </MainLayout>
+  )
+}
+
+export default function InboxPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout title="Inbox" subtitle="Manage all your conversations in one place">
+        <div className="flex items-center justify-center h-[calc(100vh-8rem)] text-slate-500">Loading...</div>
+      </MainLayout>
+    }>
+      <InboxPageContent />
+    </Suspense>
   )
 }
