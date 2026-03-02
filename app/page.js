@@ -2,8 +2,9 @@
 
 import { Users, UserPlus, DollarSign, TrendingUp, TrendingDown, Lightbulb, ChevronRight } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
+import AdminDashboard from '@/components/dashboard/AdminDashboard'
 import { dashboardStats } from '@/data/dummyData'
-import { getEffectiveBranch, isSuperAdmin } from '@/lib/auth'
+import { getEffectiveBranch, isSuperAdmin, isAdmin } from '@/lib/auth'
 import { branches } from '@/data/dummyData'
 import {
   AreaChart,
@@ -119,6 +120,18 @@ export default function Dashboard() {
   const selectedBranch = selectedBranchId
     ? branches.find((b) => b.id === selectedBranchId)
     : null
+
+  // Admin users see the Admin Dashboard (Intervention Queue, To-Do, Performance); Super Admin sees org-level dashboard
+  if (isAdmin()) {
+    return (
+      <MainLayout
+        title="Dashboard"
+        subtitle="Welcome back! Here's what's happening today."
+      >
+        <AdminDashboard />
+      </MainLayout>
+    )
+  }
 
   return (
     <MainLayout
