@@ -57,7 +57,7 @@ export default function MainLayout({ children, title, subtitle }) {
             onMenuClick={() => setMobileMenuOpen(true)} 
           />
         </Suspense>
-        <main className="flex-1 overflow-y-auto scrollbar-hide bg-background p-4 md:p-6" key={branchVersion}>
+        <main className="flex-1 min-h-0 overflow-y-auto scrollbar-hide bg-background p-1 md:p-2" key={branchVersion}>
           {children}
         </main>
       </div>

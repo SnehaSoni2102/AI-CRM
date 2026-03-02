@@ -26,7 +26,7 @@ export default function ConversationView({
   }
 
   return (
-    <main className="flex-1 flex flex-col bg-white h-full border-l border-slate-200 overflow-hidden">
+    <main className="flex-1 flex flex-col min-h-0 bg-white h-full border-l border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-slate-100 bg-white flex-shrink-0">
         <div className="flex items-center justify-between gap-4">
@@ -81,9 +81,9 @@ export default function ConversationView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide p-6 bg-slate-50">
+      <div className="flex-1 overflow-y-auto scrollbar-hide py-3 px-4 bg-slate-50">
         {messages.length === 0 ? (
-          <div className="text-center text-slate-500 text-sm py-12">No messages yet. Start the conversation!</div>
+          <div className="text-center text-slate-500 text-sm py-8">No messages yet. Start the conversation!</div>
         ) : (
           messages.map((message, idx) => {
             const isInbound = message.direction === 'inbound'
@@ -92,14 +92,14 @@ export default function ConversationView({
             return (
               <div key={message.id}>
                 {showDateDivider && (
-                  <div className="flex items-center my-4">
+                  <div className="flex items-center my-2">
                     <div className="flex-1 h-px bg-[#E6EEF8]" />
                     <div className="px-3 text-xs text-[#64748B]">{new Date(message.timestamp).toLocaleDateString()}</div>
                     <div className="flex-1 h-px bg-[#E6EEF8]" />
                   </div>
                 )}
 
-                <div className={cn('flex items-start gap-3 mb-4', isInbound ? 'justify-start' : 'justify-end')}>
+                <div className={cn('flex items-start gap-3 mb-3', isInbound ? 'justify-start' : 'justify-end')}>
                   {isInbound && (
                     <div className="flex items-start gap-3">
                       <Avatar className="h-8 w-8">
@@ -137,8 +137,8 @@ export default function ConversationView({
         )}
       </div>
 
-      {/* Message Input */}
-      <div className="p-4 border-t border-slate-100 bg-white">
+      {/* Message Input - no separating line, white input box */}
+      <div className="pt-1 pb-1 px-2 bg-slate-50">
         <MessageInput onSendMessage={onSendMessage} />
       </div>
     </main>

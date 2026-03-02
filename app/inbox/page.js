@@ -113,9 +113,9 @@ function InboxPageContent() {
 
   return (
     <MainLayout title="Inbox" subtitle="Manage all your conversations in one place">
-      <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-8rem)]">
+      <div className="flex flex-col lg:flex-row gap-0 h-full min-h-0">
         {/* Left: Contact list */}
-        <div className={cn( showContactList ? 'block' : 'hidden lg:block')}>
+        <div className={cn('h-full min-h-0', showContactList ? 'flex flex-col' : 'hidden lg:flex flex-col')}>
           <ContactList
             conversations={displayedConversations}
             selectedConversation={selectedConversation}
@@ -130,7 +130,7 @@ function InboxPageContent() {
         </div>
 
         {/* Middle: Conversation */}
-        <div className={cn('w-full lg:flex-1', !showContactList ? 'block' : 'block')}>
+        <div className="flex flex-col min-h-0 h-full w-full lg:flex-1">
           <ConversationView
             conversation={selectedConvData}
             messages={conversationMessages}
@@ -143,7 +143,7 @@ function InboxPageContent() {
 
         {/* Right: Details */}
         {showDetails && selectedConvData && (
-          <div className="hidden lg:block w-80">
+          <div className="hidden lg:flex flex-col w-80 min-h-0 h-full">
             <ContactDetails contact={selectedConvData.contact} onClose={() => setShowDetails(false)} />
           </div>
         )}

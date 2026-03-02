@@ -22,7 +22,7 @@ export default function ContactList({
 }) {
   return (
     <aside
-      className="hidden lg:flex flex-col bg-white h-full rounded-l-lg shadow-none"
+      className="hidden lg:flex flex-col min-h-0 bg-white h-full rounded-l-lg shadow-none"
       style={{ width: '330px' }}
     >
       {/* Header */}

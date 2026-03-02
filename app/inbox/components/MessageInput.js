@@ -23,14 +23,14 @@ export default function MessageInput({ onSendMessage }) {
   }
 
   return (
-    <div className="p-3 sm:p-4 bg-white">
+    <div className="p-1 sm:p-1 bg-slate-50">
       <div className="relative">
         <Textarea
           placeholder="Write a message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="min-h-[64px] sm:min-h-[80px] resize-none pr-6 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[color:var(--studio-primary)] text-sm"
+          className="min-h-[64px] sm:min-h-[80px] resize-none pr-6 rounded-xl border border-slate-200 bg-white focus:border-[color:var(--studio-primary)] text-sm"
         />
 
         {/* small action icons removed per design */}
