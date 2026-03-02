@@ -181,12 +181,12 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
-import { Bell, MapPin, ChevronDown, Menu, Search } from 'lucide-react'
+import { Bell, MapPin, ChevronDown, Menu, Search, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import BranchSelector from '@/components/shared/BranchSelector'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, logout } from '@/lib/auth'
 import { getInitials, cn } from '@/lib/utils'
 import { isSuperAdmin } from '@/lib/permissions'
 import { useInboxHeader } from '@/contexts/InboxHeaderContext'
@@ -199,7 +199,21 @@ const INBOX_FILTERS = [
 
 export default function Header({ title, subtitle, onMenuClick }) {
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileRef = useRef(null)
   const user = getCurrentUser()
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false)
+      }
+    }
+    if (showProfileMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showProfileMenu])
   const { inboxTeachersCount } = useInboxHeader()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -331,19 +345,47 @@ export default function Header({ title, subtitle, onMenuClick }) {
             )}
           </div>
 
-          {/* USER PROFILE */}
-          <div className="flex items-center gap-2">
-            <div className="h-[38px] w-[38px] rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600">
-              {user ? getInitials(user.name) : '?'}
-            </div>
-            <div className="flex flex-col min-w-0 max-w-[140px] sm:max-w-none">
-              <span className="text-sm text-[#050312] leading-tight truncate">
-                {user ? `Hi, ${user.name}` : 'Hi, User'}
-              </span>
-              <span className="text-xs text-[#94A3B8] leading-tight mt-0.5 truncate">
-                {user?.email || '—'}
-              </span>
-            </div>
+          {/* USER PROFILE – click to open dropdown with Logout */}
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              onClick={() => setShowProfileMenu((prev) => !prev)}
+              className="flex items-center gap-2 rounded-lg px-1 py-1.5 hover:bg-slate-100 transition-colors text-left min-w-0"
+              aria-expanded={showProfileMenu}
+              aria-haspopup="true"
+            >
+              <div className="h-[38px] w-[38px] rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600 shrink-0">
+                {user ? getInitials(user.name) : '?'}
+              </div>
+              <div className="flex flex-col min-w-0 max-w-[140px] sm:max-w-none hidden sm:flex items-start">
+                <span className="block text-sm text-[#050312] leading-tight truncate w-full">
+                  {user ? `Hi, ${user.name}` : 'Hi, User'}
+                </span>
+                <span className="block text-xs text-[#94A3B8] leading-tight mt-1 truncate w-full">
+                  {user?.email || '—'}
+                </span>
+              </div>
+            </button>
+
+            {showProfileMenu && (
+              <div
+                className="absolute right-0 top-full mt-2 w-48 z-50 rounded-lg border border-slate-200 bg-white shadow-lg py-1"
+                role="menu"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileMenu(false)
+                    logout()
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  <LogOut className="h-4 w-4 text-slate-500" />
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
