@@ -133,12 +133,12 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                   Welcome Back,<br />
                   {studioName}
                 </p>
-                <p
+                {/* <p
                   className="text-[#F9FAFB] flex-shrink-0"
-                  style={{ fontFamily: 'Inter', fontSize: 14, lineHeight: 1.43 }}
+                  style={{ fontFamily: 'Inter', fontSize: 10, lineHeight: 1.43 }}
                 >
                   Last Update, 3 Feb 2026
-                </p>
+                </p> */}
               </div>
             </div>
 
@@ -161,11 +161,11 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                     href={item.href}
                     className={cn(
                       'flex flex-row items-center gap-2 w-full flex-shrink-0',
-                      isActive ? 'text-[#FAEBFC] font-bold' : 'text-[#F9FAFB] font-normal'
+                      isActive ? 'text-[#cb17a7]' : 'text-[#F9FAFB] font-normal'
                     )}
                     style={{ fontFamily: 'Inter', fontSize: 14, lineHeight: 1.43 }}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0 text-white" strokeWidth={1.5} aria-hidden />
+                    <Icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} aria-hidden />
                     <span>{item.name}</span>
                   </Link>
                 )
@@ -184,7 +184,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
             gap: 4,
           }}
         >
-          <UpcomingTasksMemoji />
+          {/* <UpcomingTasksMemoji /> */}
           <div className="flex flex-col w-full flex-shrink-0" style={{ gap: 4 }}>
             <p
               className="font-bold text-[#CD3358] w-full text-left"
