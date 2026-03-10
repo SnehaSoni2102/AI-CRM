@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Plus, FileText, BarChart3, Eye, Copy, Trash2, Sparkles, GripVertical, Type, Mail, Phone, CheckSquare, Calendar, ChevronDown, Paperclip, Star, Download } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -287,7 +287,10 @@ function DroppableCanvas({ children, isEmpty }) {
 }
 
 export default function FormsPage() {
-  const [activeTab, setActiveTab] = useState('templates')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get('view') || 'templates'
   const [formFields, setFormFields] = useState([
     { id: '1', type: 'text', label: 'Full Name', placeholder: 'Enter your name', required: true, styles: {} },
     { id: '2', type: 'email', label: 'Email Address', placeholder: 'your@email.com', required: true, styles: {} },
@@ -303,6 +306,12 @@ export default function FormsPage() {
     label: 'Submit Form',
     styles: {},
   })
+
+  const setActiveTab = (tab) => {
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', tab)
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -775,15 +784,10 @@ export default function FormsPage() {
 
   return (
     <MainLayout title="Form Builder" subtitle="Create and manage forms">
-<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-slate-100">
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="builder">Form Builder</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
+      <div className="space-y-6">
+        {/* Templates View */}
+        {activeTab === 'templates' && (
+          <div className="space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-slate-600">Browse and use pre-built form templates</p>
             <Button variant="gradient" onClick={() => setActiveTab('builder')}>
@@ -797,14 +801,20 @@ export default function FormsPage() {
             {formTemplates.map((template) => (
               <Card
                 key={template.id}
-                className="hover:shadow-lg transition-shadow duration-200"
+                className="relative hover:shadow-lg transition-shadow duration-200"
               >
+                {/* Top-right CVR pill like Figma */}
+                <div className="absolute top-4 right-4">
+                  <Badge className="rounded-full bg-[#FFF4E5] text-[#F97316] px-3 py-1 text-[11px] font-medium shadow-sm">
+                    {template.conversionRate}% CVR
+                  </Badge>
+                </div>
+
                 <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start mb-2 gap-3">
                     <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center">
                       <FileText className="h-6 w-6 text-slate-600" />
                     </div>
-                    <Badge variant="success">{template.conversionRate}% CVR</Badge>
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
                   <p className="text-sm text-slate-500">{template.description}</p>
@@ -843,10 +853,12 @@ export default function FormsPage() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+          </div>
+        )}
 
-        {/* Builder Tab */}
-<TabsContent value="builder" className="h-[calc(100vh-200px)] flex flex-col">
+        {/* Builder View */}
+        {activeTab === 'builder' && (
+          <div className="h-[calc(100vh-200px)] flex flex-col">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -877,7 +889,7 @@ export default function FormsPage() {
                 </Card>
               </div>
 
-{/* Form Canvas */}
+              {/* Form Canvas */}
               <div className="col-span-6 flex flex-col min-h-0">
                 <Card className="flex flex-col flex-1 min-h-0">
                   <CardHeader className="flex-shrink-0">
@@ -978,7 +990,7 @@ export default function FormsPage() {
                 </Card>
               </div>
 
-{/* Field Settings Panel */}
+              {/* Field Settings Panel */}
               <div className="col-span-3 flex flex-col min-h-0">
                 <Card className="flex flex-col flex-1 min-h-0">
                   <CardHeader className="flex-shrink-0">
@@ -1021,7 +1033,7 @@ export default function FormsPage() {
 
               </div>
             </div>
-            
+
             <DragOverlay>
               {activeId ? (
                 <div className="p-4 rounded-lg border-2 border-brand bg-white shadow-xl">
@@ -1045,10 +1057,12 @@ export default function FormsPage() {
               ) : null}
             </DragOverlay>
           </DndContext>
-        </TabsContent>
+          </div>
+        )}
 
-        {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
+        {/* Analytics View */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardContent className="p-6">
@@ -1092,8 +1106,9 @@ export default function FormsPage() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-      </Tabs>
+          </div>
+        )}
+      </div>
 
       {/* Preview Modal */}
       <Dialog open={showPreview} onClose={() => setShowPreview(false)} maxWidth="2xl">
