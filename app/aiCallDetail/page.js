@@ -95,6 +95,7 @@ export default function AiCallDetailPage() {
     }
   }
 
+
   const handleDeleteSelected = async () => {
     if (!selectedIds.length) return
 
@@ -127,88 +128,94 @@ export default function AiCallDetailPage() {
       subtitle="Review and manage individual AI call outcomes."
     >
       <div className="max-w-[1204px] mx-auto">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-semibold text-[#050312] tracking-tight">
-              AI Call Details
-            </h1>
-            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-[#9224EF] bg-white border border-[#E2E8F0]">
-              {totalCount} calls
-            </span>
-          </div>
-          <p className="text-sm font-normal text-[#64748B]">
-            View AI calling activity, search by call ID, number, status or summary, and remove
-            outdated records.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div className="relative w-[260px] shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
-            <Input
-              placeholder="Search calls"
-              value={searchQuery}
-              onChange={(e) => {
-                setCurrentPage(1)
-                setSearchQuery(e.target.value)
-              }}
-              className="pl-9 h-9 rounded-lg border-[#E2E8F0] bg-white text-sm placeholder:text-[#94A3B8]"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-9 px-3 rounded-lg border-[#E2E8F0] bg-white text-xs font-medium text-[#334155] hover:bg-slate-50"
-              onClick={toggleSelectAllOnPage}
-              disabled={!calls.length}
-            >
-              {selectedIds.length === calls.length && calls.length > 0 ? 'Clear selection' : 'Select all on page'}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="h-9 px-3 rounded-lg text-xs font-medium"
-              onClick={handleDeleteSelected}
-              disabled={!selectedIds.length || deletingMany}
-            >
-              {deletingMany ? 'Deleting…' : `Delete selected (${selectedIds.length})`}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-9 px-4 rounded-lg border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:bg-slate-50"
-              onClick={() => loadCalls(currentPage, searchQuery)}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-[#E2E8F0] bg-white overflow-hidden">
-          {loading && (
-            <div className="flex items-center justify-center py-16">
-              <LoadingSpinner size="lg" text="Loading AI call details…" />
-            </div>
-          )}
-
-          {!loading && calls.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="h-12 w-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-                <PhoneCall className="h-6 w-6 text-[#64748B]" />
+        <div className="flex flex-col gap-6 lg:gap-8">
+          <div>
+            <div className="mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-semibold text-[#050312] tracking-tight">
+                    AI Call Details
+                  </h1>
+                  <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-[#9224EF] bg-white border border-[#E2E8F0]">
+                    {totalCount} calls
+                  </span>
+                </div>
               </div>
-              <p className="text-sm font-medium text-[#0F172A]">No AI call records found</p>
-              <p className="text-xs text-[#64748B] mt-1 max-w-sm">
-                Once AI calls are made, they will appear here with status, number, and a quick
-                summary.
+              <p className="text-sm font-normal text-[#64748B]">
+                View AI calling activity, search by call ID, number, status or summary, and remove
+                outdated records.
               </p>
             </div>
-          )}
 
-          {!loading && calls.length > 0 && (
-            <>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div className="relative w-[260px] shrink-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
+                <Input
+                  placeholder="Search calls"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setCurrentPage(1)
+                    setSearchQuery(e.target.value)
+                  }}
+                  className="pl-9 h-9 rounded-lg border-[#E2E8F0] bg-white text-sm placeholder:text-[#94A3B8]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 px-3 rounded-lg border-[#E2E8F0] bg-white text-xs font-medium text-[#334155] hover:bg-slate-50"
+                  onClick={toggleSelectAllOnPage}
+                  disabled={!calls.length}
+                >
+                  {selectedIds.length === calls.length && calls.length > 0
+                    ? 'Clear selection'
+                    : 'Select all on page'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="h-9 px-3 rounded-lg text-xs font-medium"
+                  onClick={handleDeleteSelected}
+                  disabled={!selectedIds.length || deletingMany}
+                >
+                  {deletingMany ? 'Deleting…' : `Delete selected (${selectedIds.length})`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 px-4 rounded-lg border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:bg-slate-50"
+                  onClick={() => loadCalls(currentPage, searchQuery)}
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[#E2E8F0] bg-white overflow-hidden">
+              {loading && (
+                <div className="flex items-center justify-center py-16">
+                  <LoadingSpinner size="lg" text="Loading AI call details…" />
+                </div>
+              )}
+
+              {!loading && calls.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="h-12 w-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
+                    <PhoneCall className="h-6 w-6 text-[#64748B]" />
+                  </div>
+                  <p className="text-sm font-medium text-[#0F172A]">No AI call records found</p>
+                  <p className="text-xs text-[#64748B] mt-1 max-w-sm">
+                    Once AI calls are made, they will appear here with status, number, and a quick
+                    summary.
+                  </p>
+                </div>
+              )}
+
+              {!loading && calls.length > 0 && (
+                <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                 {calls.map((call) => {
                   const createdAt = call.createdAt ? new Date(call.createdAt) : null
@@ -322,13 +329,17 @@ export default function AiCallDetailPage() {
                   Next
                 </button>
               </div>
-            </>
-          )}
-        </div>
+                </>
+              )}
+            </div>
+          </div>
 
-        {/* Details Modal */}
-        <Dialog open={!!selectedCall} onClose={() => setSelectedCall(null)} maxWidth="2xl">
-          <DialogContent onClose={() => setSelectedCall(null)} className="max-h-[90vh] overflow-y-auto">
+          {/* Details Modal */}
+          <Dialog open={!!selectedCall} onClose={() => setSelectedCall(null)} maxWidth="2xl">
+          <DialogContent
+            onClose={() => setSelectedCall(null)}
+            className="max-h-[90vh] overflow-y-auto"
+          >
             <DialogHeader>
               <DialogTitle>AI Call Details</DialogTitle>
               <DialogDescription>
@@ -431,8 +442,8 @@ export default function AiCallDetailPage() {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
     </MainLayout>
   )
 }
-
