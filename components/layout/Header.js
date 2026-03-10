@@ -220,7 +220,13 @@ export default function Header({ title, subtitle, onMenuClick }) {
   const router = useRouter()
 
   const isInbox = pathname?.startsWith('/inbox')
+  const isForms = pathname?.startsWith('/forms')
+  const isSms = pathname?.startsWith('/sms')
+  const isEmails = pathname?.startsWith('/emails')
   const inboxFilter = (isInbox && searchParams?.get('filter')) || 'all'
+  const formsView = isForms ? (searchParams?.get('view') || 'templates') : null
+  const smsView = isSms ? (searchParams?.get('view') || 'templates') : null
+  const emailsView = isEmails ? (searchParams?.get('view') || 'templates') : null
 
   const setInboxFilter = (value) => {
     const params = new URLSearchParams(searchParams?.toString() || '')
@@ -228,11 +234,32 @@ export default function Header({ title, subtitle, onMenuClick }) {
     router.push(`/inbox?${params.toString()}`)
   }
 
+  const setFormsView = (value) => {
+    if (!isForms) return
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', value)
+    router.push(`/forms?${params.toString()}`)
+  }
+
+  const setSmsView = (value) => {
+    if (!isSms) return
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', value)
+    router.push(`/sms?${params.toString()}`)
+  }
+
+  const setEmailsView = (value) => {
+    if (!isEmails) return
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', value)
+    router.push(`/emails?${params.toString()}`)
+  }
+
   return (
     <header className="sticky top-0 z-30 min-h-[86px] border-b border-slate-200/80 bg-white">
       <div className="flex min-h-[86px] items-center justify-between px-6">
 
-        {/* LEFT SECTION — INBOX SEGMENTED TABS */}
+        {/* LEFT SECTION — ROUTE-SPECIFIC NAV */}
         {isInbox ? (
           <div className="flex items-center h-[44px] rounded-full bg-[#F1F5F9] p-1">
             {INBOX_FILTERS.map(({ value, label }) => {
@@ -268,6 +295,78 @@ export default function Header({ title, subtitle, onMenuClick }) {
                 </button>
               )
             })}
+          </div>
+        ) : isForms ? (
+          <div className="flex items-center h-[44px]">
+            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+              {[
+                { value: 'templates', label: 'Templates' },
+                { value: 'builder', label: 'Form Builder' },
+                { value: 'analytics', label: 'Analytics' },
+              ].map(({ value, label }) => {
+                const isActive = formsView === value
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setFormsView(value)}
+                    className={cn(
+                      'text-sm font-medium transition-colors duration-200',
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : isSms ? (
+          <div className="flex items-center h-[44px]">
+            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+              {[
+                { value: 'templates', label: 'SMS Templates' },
+                { value: 'creator', label: 'SMS Creator' },
+                { value: 'analytics', label: 'Analytics' },
+              ].map(({ value, label }) => {
+                const isActive = smsView === value
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setSmsView(value)}
+                    className={cn(
+                      'text-sm font-medium transition-colors duration-200',
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : isEmails ? (
+          <div className="flex items-center h-[44px]">
+            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+              {[
+                { value: 'templates', label: 'Templates' },
+                { value: 'builder', label: 'Email Builder' },
+                { value: 'analytics', label: 'Analytics' },
+              ].map(({ value, label }) => {
+                const isActive = emailsView === value
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setEmailsView(value)}
+                    className={cn(
+                      'text-sm font-medium transition-colors duration-200',
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         ) : (
           <div className="flex-1" />

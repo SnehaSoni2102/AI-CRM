@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Mail, Plus, Eye, Send, Sparkles, Image, Link2, Type, Columns, Minus, Trash2, GripVertical, FileText, Square } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
@@ -264,7 +265,10 @@ function DroppableEmailCanvas({ children, isEmpty }) {
 }
 
 export default function EmailsPage() {
-  const [activeTab, setActiveTab] = useState('templates')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get('view') || 'templates'
   const [subject, setSubject] = useState('Welcome to Dance Academy!')
   const [previewText, setPreviewText] = useState('Start your dance journey today')
   const [emailBlocks, setEmailBlocks] = useState([
@@ -295,6 +299,12 @@ export default function EmailsPage() {
     }
     setEmailBlocks([...emailBlocks, newBlock])
     setSelectedBlock(newBlock.id)
+  }
+
+  const setActiveTab = (tab) => {
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', tab)
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   const applyTemplate = (templateId) => {
@@ -361,15 +371,9 @@ export default function EmailsPage() {
 
   return (
     <MainLayout title="Email Builder" subtitle="Create and send beautiful email campaigns">
-<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-slate-100">
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="builder">Email Builder</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
+      {/* Templates View */}
+      {activeTab === 'templates' && (
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-slate-600">Browse email templates</p>
             <Button variant="gradient" onClick={() => setActiveTab('builder')}>
@@ -432,10 +436,12 @@ export default function EmailsPage() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Builder Tab */}
-<TabsContent value="builder" className="h-[calc(100vh-200px)] flex flex-col">
+      {/* Builder View */}
+      {activeTab === 'builder' && (
+        <div className="h-[calc(100vh-200px)] flex flex-col">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -582,7 +588,7 @@ export default function EmailsPage() {
                 )}
               </div>
             </div>
-            
+
             <DragOverlay>
               {activeId ? (
                 <div className="p-4 rounded-lg border-2 border-brand bg-white shadow-xl">
@@ -606,10 +612,12 @@ export default function EmailsPage() {
               ) : null}
             </DragOverlay>
           </DndContext>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
+      {/* Analytics View */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardContent className="p-6">
@@ -651,8 +659,8 @@ export default function EmailsPage() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </MainLayout>
   )
 }
