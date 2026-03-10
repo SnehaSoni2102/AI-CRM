@@ -13,6 +13,7 @@ import {
   BarChart3,
   Bot,
   Settings,
+  Phone,
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ const navItems = [
   { name: 'Marketing', href: '/forms', icon: Megaphone },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'AI & Automation', href: '/workflows', icon: Bot },
+  { name: 'AI Call Detail', href: '/aiCallDetail', icon: Phone },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
