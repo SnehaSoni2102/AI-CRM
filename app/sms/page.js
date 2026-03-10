@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { MessageSquare, Plus, Sparkles, Send } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
@@ -29,7 +30,10 @@ const templateMessages = {
 }
 
 export default function SMSPage() {
-  const [activeTab, setActiveTab] = useState('templates')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get('view') || 'templates'
   const [message, setMessage] = useState('Hi {{name}}, this is a reminder for your {{class}} class today at {{time}}.')
   const [category, setCategory] = useState('Reminders')
   const [senderId, setSenderId] = useState('DanceAcad')
@@ -39,6 +43,12 @@ export default function SMSPage() {
 
   const insertVariable = (variable) => {
     setMessage(message + ' ' + variable)
+  }
+
+  const setActiveTab = (tab) => {
+    const params = new URLSearchParams(searchParams?.toString() || '')
+    params.set('view', tab)
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   const applyTemplate = (templateId, templateCategory) => {
@@ -51,15 +61,9 @@ export default function SMSPage() {
 
   return (
     <MainLayout title="SMS Campaigns" subtitle="Create and send SMS messages">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="templates" className="flex-1 sm:flex-none text-xs sm:text-sm">SMS Templates</TabsTrigger>
-          <TabsTrigger value="creator" className="flex-1 sm:flex-none text-xs sm:text-sm">SMS Creator</TabsTrigger>
-          <TabsTrigger value="analytics" className="flex-1 sm:flex-none text-xs sm:text-sm">Analytics</TabsTrigger>
-        </TabsList>
-
-        {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-4 md:space-y-6">
+      {/* Templates View */}
+      {activeTab === 'templates' && (
+        <div className="space-y-4 md:space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">Browse SMS templates</p>
             <Button variant="gradient" onClick={() => setActiveTab('creator')} className="w-full sm:w-auto">
@@ -119,10 +123,12 @@ export default function SMSPage() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Creator Tab */}
-        <TabsContent value="creator">
+      {/* Creator View */}
+      {activeTab === 'creator' && (
+        <div>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
             {/* Variables Panel */}
             <div className="md:col-span-4 lg:col-span-3">
@@ -266,10 +272,12 @@ export default function SMSPage() {
               </Card>
             </div>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Analytics Tab */}
-        <TabsContent value="analytics">
+      {/* Analytics View */}
+      {activeTab === 'analytics' && (
+        <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardContent className="p-6">
@@ -349,8 +357,8 @@ export default function SMSPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </MainLayout>
   )
 }
