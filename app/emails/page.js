@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Mail, Plus, Eye, Send, Sparkles, Image, Link2, Type, Columns, Minus, Trash2, GripVertical, FileText, Square } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
@@ -264,7 +264,7 @@ function DroppableEmailCanvas({ children, isEmpty }) {
   )
 }
 
-export default function EmailsPage() {
+function EmailsPageInner() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -662,5 +662,13 @@ export default function EmailsPage() {
         </div>
       )}
     </MainLayout>
+  )
+}
+
+export default function EmailsPage() {
+  return (
+    <Suspense fallback={null}>
+      <EmailsPageInner />
+    </Suspense>
   )
 }

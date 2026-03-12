@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { MessageSquare, Plus, Sparkles, Send } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
@@ -29,7 +29,7 @@ const templateMessages = {
   s4: 'Hi {{name}}! Want to try a free class? Reply YES to reserve your spot.',
 }
 
-export default function SMSPage() {
+function SMSPageInner() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -360,6 +360,14 @@ export default function SMSPage() {
         </div>
       )}
     </MainLayout>
+  )
+}
+
+export default function SMSPage() {
+  return (
+    <Suspense fallback={null}>
+      <SMSPageInner />
+    </Suspense>
   )
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { Phone, Plus, Play, Copy, Trash2, User, FileText, Upload, Check, Mic } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,7 @@ const fileTypeIcons = {
   mp3: '🎵',
 }
 
-export default function AICallingPage() {
+function AICallingPageInner() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -381,6 +381,14 @@ export default function AICallingPage() {
         </TabsContent>
       </Tabs>
     </MainLayout>
+  )
+}
+
+export default function AICallingPage() {
+  return (
+    <Suspense fallback={null}>
+      <AICallingPageInner />
+    </Suspense>
   )
 }
 
