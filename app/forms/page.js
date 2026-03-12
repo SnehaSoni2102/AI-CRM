@@ -1,6 +1,10 @@
 'use client'
 
+<<<<<<< HEAD
 import { useState, Suspense } from 'react'
+=======
+import { Suspense, useState } from 'react'
+>>>>>>> frontend
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { Plus, FileText, BarChart3, Eye, Copy, Trash2, Sparkles, GripVertical, Type, Mail, Phone, CheckSquare, Calendar, ChevronDown, Paperclip, Star, Download } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
@@ -1199,8 +1203,24 @@ function FormsPageInner() {
 
 export default function FormsPage() {
   return (
+<<<<<<< HEAD
     <Suspense fallback={null}>
+=======
+    <Suspense
+      fallback={
+        <MainLayout title="Form Builder" subtitle="Create and manage forms">
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 rounded-full border-2 border-slate-300 border-t-transparent animate-spin" />
+          </div>
+        </MainLayout>
+      }
+    >
+>>>>>>> frontend
       <FormsPageInner />
     </Suspense>
   )
 }
+<<<<<<< HEAD
+=======
+//
+>>>>>>> frontend
