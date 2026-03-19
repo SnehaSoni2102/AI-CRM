@@ -1,16 +1,20 @@
 'use client'
 
-import { Phone, Plus, Copy, Trash2, Tags, Pencil } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { Phone, Plus, Copy, Trash2, Tags, Pencil, Search } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 import CategoriesDialog from './CategoriesDialog'
 import ScriptEditorDialog from './ScriptEditorDialog'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
 import LoadingSpinner from '@/components/shared/LoadingSpinner'
+
+const SCRIPTS_PAGE_SIZE = 9
 
 function safeRate(conversions, calls) {
   const c = Number(conversions || 0)
@@ -36,19 +40,39 @@ export default function ScriptsTab() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  const sortedScripts = useMemo(() => {
-    return [...scripts].sort((a, b) => (a?.name || '').localeCompare(b?.name || ''))
-  }, [scripts])
+  const pageNumbers = useMemo(() => Array.from({ length: totalPages }, (_, i) => i + 1), [totalPages])
 
-  async function fetchScripts() {
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
+  const fetchScripts = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await api.get('/api/ai-script/')
-      if (result.success) {
-        const list = result.data?.Scripts
-        setScripts(Array.isArray(list) ? list : [])
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(SCRIPTS_PAGE_SIZE),
+      })
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
+      const result = await api.get(`/api/ai-script/paginated?${params.toString()}`)
+      const list = result.data?.Scripts ?? result.data?.scripts ?? result.data
+      if (result.success && Array.isArray(list)) {
+        setScripts(list)
+        const total = result.pagination?.total ?? list.length
+        setTotalCount(total)
+        setTotalPages(Math.max(1, Math.ceil(total / SCRIPTS_PAGE_SIZE)))
       } else {
         setError(result.error || 'Failed to fetch scripts')
       }
@@ -58,11 +82,11 @@ export default function ScriptsTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, debouncedSearch])
 
   useEffect(() => {
     fetchScripts()
-  }, [])
+  }, [fetchScripts])
 
   async function handleDeleteScript(script) {
     if (!script?._id) return
@@ -71,8 +95,9 @@ export default function ScriptsTab() {
     try {
       const result = await api.delete(`/api/ai-script/${script._id}`)
       if (result.success) {
-        setScripts((prev) => prev.filter((s) => s._id !== script._id))
         toast.success({ title: 'Deleted', message: 'Script deleted successfully.' })
+        if (scripts.length === 1 && page > 1) setPage((p) => Math.max(1, p - 1))
+        else fetchScripts()
       } else {
         toast.error({ title: 'Delete failed', message: result.error || 'Could not delete script.' })
       }
@@ -125,6 +150,16 @@ export default function ScriptsTab() {
         onSaved={fetchScripts}
       />
 
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search scripts…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       {loading && (
         <div className="flex flex-col items-center justify-center py-16">
           <LoadingSpinner size="lg" text="Loading scripts…" />
@@ -148,7 +183,7 @@ export default function ScriptsTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {!loading &&
           !error &&
-          sortedScripts.map((script, index) => (
+          scripts.map((script, index) => (
           <Card
             key={script._id}
             className="group overflow-hidden border-border/80 hover:border-primary/30 hover:shadow-lg transition-all duration-200 cursor-pointer animate-fade-in rounded-2xl"
@@ -261,6 +296,48 @@ export default function ScriptsTab() {
           </Card>
         ))}
       </div>
+
+      {!loading && !error && scripts.length > 0 && (
+        <div className="flex flex-col gap-3 pt-2">
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            {pageNumbers.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPage(n)}
+                disabled={loading || n === page}
+                className={cn(
+                  'inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-md text-sm font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                  n === page ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border hover:bg-muted/40'
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+              className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-muted-foreground">
+              Page {page} of {totalPages} ({totalCount} total)
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || loading}
+              className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </TabsContent>
   )
 }

@@ -1,15 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { ExternalLink, FileText, Pencil, Trash2, Upload } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ExternalLink, FileText, Pencil, Search, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
 import LoadingSpinner from '@/components/shared/LoadingSpinner'
+
+const FILES_PAGE_SIZE = 10
 import KnowledgeBaseUploadDialog from './KnowledgeBaseUploadDialog'
 import KnowledgeBaseEditDialog from './KnowledgeBaseEditDialog'
 
@@ -37,19 +40,43 @@ export default function KnowledgeBaseTab() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   const [uploadOpen, setUploadOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [editingFile, setEditingFile] = useState(null)
 
-  async function fetchFiles() {
+  const pageNumbers = useMemo(() => Array.from({ length: totalPages }, (_, i) => i + 1), [totalPages])
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
+  const fetchFiles = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const result = await api.get('/api/ai-script/file/')
-      if (result.success) {
-        const list = result.data?.files
-        setFiles(Array.isArray(list) ? list : [])
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(FILES_PAGE_SIZE),
+      })
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
+      const result = await api.get(`/api/ai-script/file/paginated?${params.toString()}`)
+      const list = result.data?.files ?? result.data
+      if (result.success && Array.isArray(list)) {
+        setFiles(list)
+        const total = result.pagination?.total ?? list.length
+        setTotalCount(total)
+        setTotalPages(Math.max(1, Math.ceil(total / FILES_PAGE_SIZE)))
       } else {
         setError(result.error || 'Failed to fetch files')
       }
@@ -59,11 +86,11 @@ export default function KnowledgeBaseTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, debouncedSearch])
 
   useEffect(() => {
     fetchFiles()
-  }, [])
+  }, [fetchFiles])
 
   const totalSizeLabel = useMemo(() => {
     return '—'
@@ -76,8 +103,9 @@ export default function KnowledgeBaseTab() {
     try {
       const result = await api.delete(`/api/ai-script/file/${file._id}`)
       if (result.success) {
-        setFiles((prev) => prev.filter((f) => f._id !== file._id))
         toast.success({ title: 'Deleted', message: 'File deleted successfully.' })
+        if (files.length === 1 && page > 1) setPage((p) => Math.max(1, p - 1))
+        else fetchFiles()
       } else {
         toast.error({ title: 'Delete failed', message: result.error || 'Could not delete file.' })
       }
@@ -104,6 +132,16 @@ export default function KnowledgeBaseTab() {
         file={editingFile}
         onSaved={fetchFiles}
       />
+
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search files…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
       <Card
         className={cn(
@@ -237,6 +275,48 @@ export default function KnowledgeBaseTab() {
             </Card>
           )}
         </div>
+
+        {!loading && !error && files.length > 0 && (
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              {pageNumbers.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setPage(n)}
+                  disabled={loading || n === page}
+                  className={cn(
+                    'inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-md text-sm font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                    n === page ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border hover:bg-muted/40'
+                  )}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || loading}
+                className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} ({totalCount} total)
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || loading}
+                className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -245,7 +325,7 @@ export default function KnowledgeBaseTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total documents</p>
-                <p className="text-2xl font-bold mt-1 tabular-nums">{files.length}</p>
+                <p className="text-2xl font-bold mt-1 tabular-nums">{totalCount}</p>
               </div>
               <FileText className="h-10 w-10 text-primary/20" />
             </div>
