@@ -20,6 +20,9 @@ function AICallingPageInner() {
   const [personasLoading, setPersonasLoading] = useState(false)
   const [personasError, setPersonasError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [personasPage, setPersonasPage] = useState(1)
+  const [personasTotalPages, setPersonasTotalPages] = useState(1)
+  const [personasTotal, setPersonasTotal] = useState(0)
   const toast = useToast()
 
   const setActiveTab = (tab) => {
@@ -34,9 +37,19 @@ function AICallingPageInner() {
         setPersonasLoading(true)
         setPersonasError(null)
 
-        const result = await api.get('/api/ai-persona')
-        if (result.success && Array.isArray(result.data)) {
-          setPersonas(result.data)
+        const params = new URLSearchParams({
+          page: String(personasPage),
+          limit: '9',
+        })
+
+        const result = await api.get(`/api/ai-persona?${params.toString()}`)
+        const list = Array.isArray(result.data) ? result.data : result.data?.personas
+
+        if (result.success && Array.isArray(list)) {
+          setPersonas(list)
+          const total = result.pagination?.total ?? list.length
+          setPersonasTotal(total)
+          setPersonasTotalPages(Math.max(1, Math.ceil((total || 0) / 9)))
         } else {
           setPersonasError(result.error || 'Failed to fetch AI personas')
         }
@@ -48,7 +61,7 @@ function AICallingPageInner() {
     }
 
     fetchPersonas()
-  }, [])
+  }, [personasPage])
 
   const handleDeletePersona = async (id) => {
     try {
@@ -56,7 +69,13 @@ function AICallingPageInner() {
       const result = await api.delete(`/api/ai-persona/${id}`)
       if (result.success) {
         setPersonas((prev) => prev.filter((persona) => persona._id !== id))
+        setPersonasTotal((t) => Math.max(0, (t || 0) - 1))
         toast.success({ title: 'Persona removed', message: 'AI persona has been deleted.' })
+
+        // If we deleted the last item on the page, go back a page (if possible) so the grid doesn't go empty.
+        if (personas.length === 1 && personasPage > 1) {
+          setPersonasPage((p) => Math.max(1, p - 1))
+        }
       } else {
         toast.error({ title: 'Delete failed', message: result.error || 'Could not delete persona.' })
       }
@@ -78,6 +97,12 @@ function AICallingPageInner() {
           personasError={personasError}
           deletingId={deletingId}
           onDeletePersona={handleDeletePersona}
+          currentPage={personasPage}
+          totalPages={personasTotalPages}
+          totalCount={personasTotal}
+          onPrevPage={() => setPersonasPage((p) => Math.max(1, p - 1))}
+          onNextPage={() => setPersonasPage((p) => Math.min(personasTotalPages, p + 1))}
+          onPageChange={(page) => setPersonasPage(page)}
         />
         <KnowledgeBaseTab />
       </Tabs>

@@ -12,67 +12,19 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner'
 import { toast } from '@/components/ui/toast'
 
 const WIZARD_LEADS_PAGE_SIZE = 10
+const WIZARD_PERSONAS_PAGE_SIZE = 8
 
-const DEFAULT_SCRIPT = {
-  id: 'default',
-  name: 'Dance Studio America — Illias',
-  description: 'Lively and personable intro script for Dance Studio America.',
+const DEFAULT_ASSISTANT_OPTIONS = {
+  firstMessageMode: 'assistant-speaks-first-with-model-generated-message',
   firstMessage: 'Hello.',
-  backgroundSound: 'office',
-  endCallMessage: 'Goodbye.',
-  script: `[Identity]
-You are Illias, a lively and personable AI voice assistant for Dance Studio America. Your mission is to greet callers, introduce the studio's vibrant culture, share details about classes, and encourage genuine conversation about dance possibilities.
-
-[Style]
-- Be friendly, upbeat, and naturally conversational—like a passionate dance community member.
-- Use plain, relatable language and sprinkle in gentle pauses or warm hesitations ("um," "let me think...") as needed for realism.
-- Invite callers to share and ask questions, creating a dialogue rather than simply delivering information.
-- Use light humor or encouragement (e.g., "Don't be shy, I love talking dance!") to put callers at ease.
-- Speak in a relaxed tone—never rushed or overly scripted.
-
-[Response Guidelines]
-- Start each call by introducing yourself and Dance Studio America, highlighting the inclusive, joyful spirit of the studio.
-- When describing schedules, spell out days and use "morning," "afternoon," or "evening" for clarity; avoid strict numeric formats.
-- Mention a few popular class styles (ballet, hip-hop, salsa, jazz, beginner, adult, etc.), and reference suitable ages or experience levels.
-- After sharing information, invite the caller to chime in—ask open-ended questions like, "Is there a kind of dance you've always wanted to try?" or "What brings you to dance today?"
-- Always pause after asking a question and let the caller speak—never move forward without their input.
-- Respond to doubts or questions with warmth, offering extra details and encouragement.
-- If the caller expresses interest, explain next steps like joining, registration, or free trial options, and let them guide the pace of the conversation.
-
-[Task & Goals]
-1. Begin with a warm greeting, introducing yourself as Illias and Dance Studio America. Express excitement about connecting through dance.
-2. Give a lively, short overview of class options—name a few dance styles and note who classes are for (kids, adults, all levels).
-3. Highlight what makes the studio special: energetic community, fun atmosphere, passionate teachers, and flexible class times.
-4. Ask a friendly, open-ended question to understand the caller's interest or needs (e.g., "Are you looking for a specific style, or just exploring what's possible?").
-   < wait for user response >
-5. If the caller is interested, share more details tailored to their interest, including schedules and how to join or try a class.
-   - Offer to answer any questions or help them take the next step.
-   < wait for user response >
-6. If the caller is just inquiring, unsure, or not interested, thank them genuinely, emphasize they're welcome any time, and offer to send more details or connect with staff if needed.
-7. At any point, invite questions: "Is there anything you're curious about, or any doubts I can clear up for you?"
-8. Close the call on a positive note, welcoming them to drop by or call again, and wishing them a wonderful day.
-
-[Error Handling / Fallback]
-- If the caller's intent or question is unclear, gently prompt for more info: "Could you share a bit more about what interests you in dance classes?"
-- If asked something beyond your knowledge, kindly offer to connect them with a human staff member for expert help.
-- With technical issues or if you can't understand, apologize and politely ask them to repeat or clarify.
-- If the caller is quiet or unsure, prompt with encouragement: "Don't worry, take your time—I'm here to help with anything you're curious about."
-- If there is no response after prompting, reassure them they're welcome to call again, and end the call gracefully.`,
-}
-
-const DEFAULT_ASSISTANT_DATA = {
-  backgroundSound: DEFAULT_SCRIPT.backgroundSound,
-  endCallMessage: DEFAULT_SCRIPT.endCallMessage,
-  fileID: '',
-  firstMessage: DEFAULT_SCRIPT.firstMessage,
-  scriptData: { script: DEFAULT_SCRIPT.script },
   voiceMessage: 'Hey, I tried calling you!',
+  backgroundSound: 'office', // 'office' | null
+  endCallMessage: 'Goodbye.',
 }
 
 export default function MakeCallsPage() {
   const [wizardStep, setWizardStep] = useState(1) // 1: contacts, 2: persona, 3: script, 4: review
   const [launching, setLaunching] = useState(false)
-  const [scriptSelected, setScriptSelected] = useState(false)
 
   // Leads selection (reusing Leads tab API)
   const [wizardLeads, setWizardLeads] = useState([])
@@ -85,13 +37,32 @@ export default function MakeCallsPage() {
 
   // Personas selection (reusing AI Calling personas API)
   const [personas, setPersonas] = useState([])
+  const [personasTotal, setPersonasTotal] = useState(0)
+  const [personasPage, setPersonasPage] = useState(1)
   const [personasLoading, setPersonasLoading] = useState(false)
   const [personasError, setPersonasError] = useState(null)
   const [selectedPersonaId, setSelectedPersonaId] = useState(null)
+  const [scripts, setScripts] = useState([])
+  const [scriptsLoading, setScriptsLoading] = useState(false)
+  const [scriptsError, setScriptsError] = useState(null)
+  const [selectedScriptId, setSelectedScriptId] = useState(null)
+  const [knowledgeFiles, setKnowledgeFiles] = useState([])
+  const [knowledgeFilesLoading, setKnowledgeFilesLoading] = useState(false)
+  const [knowledgeFilesError, setKnowledgeFilesError] = useState(null)
+  const [selectedKnowledgeFileId, setSelectedKnowledgeFileId] = useState('')
+  const [firstMessageMode, setFirstMessageMode] = useState(DEFAULT_ASSISTANT_OPTIONS.firstMessageMode)
+  const [firstMessage, setFirstMessage] = useState(DEFAULT_ASSISTANT_OPTIONS.firstMessage)
+  const [voiceMessage, setVoiceMessage] = useState(DEFAULT_ASSISTANT_OPTIONS.voiceMessage)
+  const [backgroundSound, setBackgroundSound] = useState(DEFAULT_ASSISTANT_OPTIONS.backgroundSound)
+  const [endCallMessage, setEndCallMessage] = useState(DEFAULT_ASSISTANT_OPTIONS.endCallMessage)
 
   const wizardLeadsTotalPages = Math.max(
     1,
     Math.ceil((wizardLeadsTotal || 0) / WIZARD_LEADS_PAGE_SIZE)
+  )
+  const personasTotalPages = Math.max(
+    1,
+    Math.ceil((personasTotal || 0) / WIZARD_PERSONAS_PAGE_SIZE)
   )
 
   const loadWizardLeads = useCallback(
@@ -125,13 +96,20 @@ export default function MakeCallsPage() {
     []
   )
 
-  const loadPersonas = useCallback(async () => {
+  const loadPersonas = useCallback(async (page = 1) => {
     setPersonasLoading(true)
     setPersonasError(null)
     try {
-      const result = await api.get('/api/ai-persona')
-      if (result.success && Array.isArray(result.data)) {
-        setPersonas(result.data)
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(WIZARD_PERSONAS_PAGE_SIZE),
+      })
+      const result = await api.get(`/api/ai-persona?${params.toString()}`)
+      const list = Array.isArray(result.data) ? result.data : result.data?.personas
+      if (result.success && Array.isArray(list)) {
+        setPersonas(list)
+        const total = result.pagination?.total ?? list.length
+        setPersonasTotal(total)
       } else {
         setPersonasError(result.error || 'Failed to load personas')
       }
@@ -143,13 +121,56 @@ export default function MakeCallsPage() {
     }
   }, [])
 
+  const loadScripts = useCallback(async () => {
+    setScriptsLoading(true)
+    setScriptsError(null)
+    try {
+      const result = await api.get('/api/ai-script/')
+      const list = result.data?.Scripts
+      if (result.success && Array.isArray(list)) {
+        setScripts(list)
+      } else {
+        setScriptsError(result.error || 'Failed to load scripts')
+      }
+    } catch (e) {
+      console.error(e)
+      setScriptsError('Unable to load scripts')
+    } finally {
+      setScriptsLoading(false)
+    }
+  }, [])
+
+  const loadKnowledgeFiles = useCallback(async () => {
+    setKnowledgeFilesLoading(true)
+    setKnowledgeFilesError(null)
+    try {
+      const result = await api.get('/api/ai-script/file/')
+      const list = result.data?.files
+      if (result.success && Array.isArray(list)) {
+        setKnowledgeFiles(list)
+      } else {
+        setKnowledgeFilesError(result.error || 'Failed to load knowledge base files')
+      }
+    } catch (e) {
+      console.error(e)
+      setKnowledgeFilesError('Unable to load knowledge base files')
+    } finally {
+      setKnowledgeFilesLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     loadWizardLeads(wizardLeadsPage, wizardLeadsSearch)
   }, [wizardLeadsPage, wizardLeadsSearch, loadWizardLeads])
 
   useEffect(() => {
-    loadPersonas()
-  }, [loadPersonas])
+    loadPersonas(personasPage)
+  }, [loadPersonas, personasPage])
+
+  useEffect(() => {
+    loadScripts()
+    loadKnowledgeFiles()
+  }, [loadScripts, loadKnowledgeFiles])
 
   const toggleWizardLead = (lead) => {
     const id = lead._id
@@ -182,10 +203,13 @@ export default function MakeCallsPage() {
 
   const selectedLeads = selectedLeadsData
   const selectedPersona = personas.find((p) => p._id === selectedPersonaId) || null
+  const selectedScript = scripts.find((s) => s._id === selectedScriptId) || null
+  const selectedKnowledgeFile =
+    knowledgeFiles.find((f) => f._id === selectedKnowledgeFileId || f.fileID === selectedKnowledgeFileId) || null
   const canContinue =
     (wizardStep === 1 && selectedLeads.length > 0) ||
     (wizardStep === 2 && !!selectedPersona) ||
-    (wizardStep === 3 && scriptSelected) ||
+    (wizardStep === 3 && !!selectedScript) ||
     wizardStep === 4
 
   const resetFlow = () => {
@@ -196,7 +220,14 @@ export default function MakeCallsPage() {
     setSelectedLeadIds([])
     setSelectedLeadsData([])
     setSelectedPersonaId(null)
-    setScriptSelected(false)
+    setPersonasPage(1)
+    setSelectedScriptId(null)
+    setSelectedKnowledgeFileId('')
+    setFirstMessageMode(DEFAULT_ASSISTANT_OPTIONS.firstMessageMode)
+    setFirstMessage(DEFAULT_ASSISTANT_OPTIONS.firstMessage)
+    setVoiceMessage(DEFAULT_ASSISTANT_OPTIONS.voiceMessage)
+    setBackgroundSound(DEFAULT_ASSISTANT_OPTIONS.backgroundSound)
+    setEndCallMessage(DEFAULT_ASSISTANT_OPTIONS.endCallMessage)
   }
 
   const handleLaunchCalls = async () => {
@@ -214,6 +245,13 @@ export default function MakeCallsPage() {
       setWizardStep(2)
       return
     }
+    if (!selectedScript) {
+      toast.error('Select a script', {
+        description: 'Choose a script in Step 3 before launching.',
+      })
+      setWizardStep(3)
+      return
+    }
 
     const leadsPayload = selectedLeads.map((lead) => ({
       name: String(lead.name ?? ''),
@@ -222,16 +260,22 @@ export default function MakeCallsPage() {
     }))
 
     const assistantData = {
-      backgroundSound: DEFAULT_ASSISTANT_DATA.backgroundSound,
-      endCallMessage: DEFAULT_ASSISTANT_DATA.endCallMessage,
-      fileID: DEFAULT_ASSISTANT_DATA.fileID,
-      firstMessage: DEFAULT_ASSISTANT_DATA.firstMessage,
+      backgroundSound: backgroundSound === 'office' ? 'office' : null,
+      endCallMessage: String(endCallMessage || ''),
+      firstMessageMode: String(firstMessageMode || ''),
+      fileID: String(selectedKnowledgeFile?.fileID || selectedKnowledgeFileId || ''),
+      firstMessage:
+        firstMessageMode === 'assistant-speaks-first-with-model-generated-message'
+          ? ''
+          : String(firstMessage || ''),
       persona: {
         provider: selectedPersona.provider,
+        similarityBoost: Number(selectedPersona.similarityBoost ?? 0.45),
+        stability: Number(selectedPersona.stability ?? 0.2),
         voiceId: selectedPersona.voiceId,
       },
-      scriptData: DEFAULT_ASSISTANT_DATA.scriptData,
-      voiceMessage: DEFAULT_ASSISTANT_DATA.voiceMessage,
+      scriptData: { script: String(selectedScript.script || '') },
+      voiceMessage: String(voiceMessage || ''),
     }
 
     const payload = {
@@ -535,53 +579,91 @@ export default function MakeCallsPage() {
                 )}
 
                 {!personasLoading && !personasError && personas.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-1">
-                    {personas.map((persona) => {
-                      const selected = selectedPersonaId === persona._id
-                      return (
-                        <button
-                          key={persona._id}
-                          type="button"
-                          onClick={() => setSelectedPersonaId(persona._id)}
-                          className={`w-full rounded-xl border p-3 text-left transition-all ${
-                            selected
-                              ? 'border-[#9224EF] bg-[#F3E8FF] shadow-sm'
-                              : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFF]'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <div className="h-9 w-9 rounded-xl bg-[#EEF2FF] flex items-center justify-center shrink-0">
-                                <User className="h-4 w-4 text-[#4F46E5]" />
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-1">
+                      {personas.map((persona) => {
+                        const selected = selectedPersonaId === persona._id
+                        return (
+                          <button
+                            key={persona._id}
+                            type="button"
+                            onClick={() => setSelectedPersonaId(persona._id)}
+                            className={`w-full rounded-xl border p-3 text-left transition-all ${
+                              selected
+                                ? 'border-[#9224EF] bg-[#F3E8FF] shadow-sm'
+                                : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFF]'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div className="h-9 w-9 rounded-xl bg-[#EEF2FF] flex items-center justify-center shrink-0">
+                                  <User className="h-4 w-4 text-[#4F46E5]" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-[#0F172A] truncate">
+                                    {persona.voice || 'Unnamed Persona'}
+                                  </p>
+                                  <p className="text-[11px] text-[#94A3B8] truncate">
+                                    {[persona.provider, persona.model, persona.gender]
+                                      .filter(Boolean)
+                                      .join(' · ') || '—'}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-[#0F172A] truncate">
-                                  {persona.voice || 'Unnamed Persona'}
-                                </p>
-                                <p className="text-[11px] text-[#94A3B8] truncate">
-                                  {[persona.provider, persona.model, persona.gender]
-                                    .filter(Boolean)
-                                    .join(' · ') || '—'}
-                                </p>
-                              </div>
+                              {selected && (
+                                <span className="text-[11px] font-medium text-emerald-600 shrink-0">
+                                  Selected
+                                </span>
+                              )}
                             </div>
-                            {selected && (
-                              <span className="text-[11px] font-medium text-emerald-600 shrink-0">
-                                Selected
-                              </span>
+                            {persona.description && (
+                              <p className="text-[11px] text-[#64748B] mt-2 line-clamp-2">
+                                {Array.isArray(persona.description)
+                                  ? persona.description.join(' · ')
+                                  : persona.description}
+                              </p>
                             )}
-                          </div>
-                          {persona.description && (
-                            <p className="text-[11px] text-[#64748B] mt-2 line-clamp-2">
-                              {Array.isArray(persona.description)
-                                ? persona.description.join(' · ')
-                                : persona.description}
-                            </p>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2 text-[11px] text-[#64748B]">
+                      <button
+                        type="button"
+                        onClick={() => setPersonasPage((p) => Math.max(1, p - 1))}
+                        disabled={personasPage === 1 || personasLoading}
+                        className="px-2 py-1 rounded border border-[#E2E8F0] bg-white disabled:opacity-40"
+                      >
+                        Prev
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: personasTotalPages }, (_, i) => i + 1).map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setPersonasPage(n)}
+                            disabled={personasLoading || n === personasPage}
+                            className={`h-7 min-w-7 px-2 rounded border text-[11px] ${
+                              n === personasPage
+                                ? 'border-[#9224EF] bg-[#F3E8FF] text-[#6D28D9]'
+                                : 'border-[#E2E8F0] bg-white text-[#475569]'
+                            } disabled:opacity-60`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPersonasPage((p) => Math.min(personasTotalPages, p + 1))}
+                        disabled={personasPage === personasTotalPages || personasLoading}
+                        className="px-2 py-1 rounded border border-[#E2E8F0] bg-white disabled:opacity-40"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -592,59 +674,168 @@ export default function MakeCallsPage() {
                 <div>
                   <p className="text-sm font-medium text-[#0F172A] flex items-center gap-2">
                     <FileText className="h-4 w-4 text-[#6366F1]" />
-                    Select script
+                    Script and assistant settings
                   </p>
                   <p className="text-xs text-[#64748B]">
-                    Choose the script that will be used for this AI calling run.
+                    Choose script, optional knowledge base file, and customize assistant messages.
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setScriptSelected(true)}
-                  className={`w-full rounded-xl border p-3 text-left transition-all ${
-                    scriptSelected
-                      ? 'border-[#9224EF] bg-[#F3E8FF] shadow-sm'
-                      : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFF]'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="h-9 w-9 rounded-xl bg-[#EEF2FF] flex items-center justify-center shrink-0">
-                        <FileText className="h-4 w-4 text-[#4F46E5]" />
+                {scriptsLoading && (
+                  <div className="flex items-center justify-center py-8">
+                    <LoadingSpinner size="sm" text="Loading scripts…" />
+                  </div>
+                )}
+
+                {scriptsError && !scriptsLoading && (
+                  <div className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+                    {scriptsError}
+                  </div>
+                )}
+
+                {!scriptsLoading && !scriptsError && scripts.length === 0 && (
+                  <div className="text-xs text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-md px-3 py-3">
+                    No scripts configured yet. Add scripts from AI Calling &gt; Scripts first.
+                  </div>
+                )}
+
+                {!scriptsLoading && !scriptsError && scripts.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+                    {scripts.map((script) => {
+                      const selected = selectedScriptId === script._id
+                      return (
+                        <button
+                          key={script._id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedScriptId(script._id)
+                          }}
+                          className={`w-full rounded-xl border p-3 text-left transition-all ${
+                            selected
+                              ? 'border-[#9224EF] bg-[#F3E8FF] shadow-sm'
+                              : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFF]'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-[#0F172A] truncate">
+                                {script.name || 'Untitled Script'}
+                              </p>
+                              <p className="text-[11px] text-[#94A3B8] truncate">
+                                {[script.categoryID?.name, script.subCategory].filter(Boolean).join(' · ') || '—'}
+                              </p>
+                            </div>
+                            {selected && (
+                              <span className="text-[11px] font-medium text-emerald-600 shrink-0">
+                                Selected
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#64748B] mt-2 line-clamp-3 whitespace-pre-wrap">
+                            {script.script || 'No script content'}
+                          </p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <Card className="border-[#E2E8F0]">
+                  <CardContent className="p-3 space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-[#475569] mb-1 block">
+                        Knowledge base file (optional)
+                      </label>
+                      <select
+                        value={selectedKnowledgeFileId}
+                        onChange={(e) => setSelectedKnowledgeFileId(e.target.value)}
+                        className="h-9 w-full rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs"
+                      >
+                        <option value="">No file</option>
+                        {knowledgeFiles.map((file) => (
+                          <option key={file._id} value={file.fileID || file._id}>
+                            {file.name}
+                          </option>
+                        ))}
+                      </select>
+                      {knowledgeFilesLoading && (
+                        <p className="text-[11px] text-[#94A3B8] mt-1">Loading files…</p>
+                      )}
+                      {knowledgeFilesError && (
+                        <p className="text-[11px] text-red-600 mt-1">{knowledgeFilesError}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-[#475569] mb-1 block">
+                          First message mode
+                        </label>
+                        <select
+                          value={firstMessageMode}
+                          onChange={(e) => setFirstMessageMode(e.target.value)}
+                          className="h-9 w-full rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs"
+                        >
+                          <option value="assistant-waits-for-user">assistant-waits-for-user</option>
+                          <option value="assistant-speaks-first-with-model-generated-message">
+                            assistant-speaks-first-with-model-generated-message
+                          </option>
+                          <option value="assistant-speaks-first">assistant-speaks-first</option>
+                        </select>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#0F172A]">
-                          {DEFAULT_SCRIPT.name}
-                        </p>
-                        <p className="text-[11px] text-[#94A3B8]">
-                          {DEFAULT_SCRIPT.description}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1 text-[11px] text-[#64748B]">
-                          <span>
-                            <span className="font-medium text-[#475569]">Opens with:</span>{' '}
-                            &ldquo;{DEFAULT_SCRIPT.firstMessage}&rdquo;
-                          </span>
-                          <span className="text-[#CBD5E1]">·</span>
-                          <span>
-                            <span className="font-medium text-[#475569]">Sound:</span>{' '}
-                            {DEFAULT_SCRIPT.backgroundSound}
-                          </span>
-                        </div>
+                      <div>
+                        <label className="text-xs font-medium text-[#475569] mb-1 block">
+                          Voice message
+                        </label>
+                        <Input
+                          value={voiceMessage}
+                          onChange={(e) => setVoiceMessage(e.target.value)}
+                          className="h-9 text-xs"
+                          placeholder="Hey, I tried calling you!"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-[#475569] mb-1 block">
+                          Background sound
+                        </label>
+                        <select
+                          value={backgroundSound === 'office' ? 'office' : 'none'}
+                          onChange={(e) => setBackgroundSound(e.target.value === 'office' ? 'office' : null)}
+                          className="h-9 w-full rounded-lg border border-[#E2E8F0] bg-white px-2.5 text-xs"
+                        >
+                          <option value="none">none</option>
+                          <option value="office">office background</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-[#475569] mb-1 block">
+                          End call message
+                        </label>
+                        <Input
+                          value={endCallMessage}
+                          onChange={(e) => setEndCallMessage(e.target.value)}
+                          className="h-9 text-xs"
+                          placeholder="Goodbye."
+                        />
                       </div>
                     </div>
-                    {scriptSelected && (
-                      <span className="text-[11px] font-medium text-emerald-600 shrink-0">
-                        Selected
-                      </span>
+
+                    {firstMessageMode !== 'assistant-speaks-first-with-model-generated-message' && (
+                      <div>
+                        <label className="text-xs font-medium text-[#475569] mb-1 block">First message</label>
+                        <Input
+                          value={firstMessage}
+                          onChange={(e) => setFirstMessage(e.target.value)}
+                          className="h-9 text-xs"
+                          placeholder="Hello."
+                        />
+                        <p className="text-[11px] text-[#94A3B8] mt-1">
+                          This will be used only when the assistant speaks first.
+                        </p>
+                      </div>
                     )}
-                  </div>
-                  <div className="rounded-lg border border-[#E2E8F0] bg-white/70 p-2.5 max-h-52 overflow-y-auto">
-                    <pre className="text-[11px] text-[#475569] whitespace-pre-wrap font-mono leading-relaxed">
-                      {DEFAULT_SCRIPT.script}
-                    </pre>
-                  </div>
-                </button>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -712,15 +903,41 @@ export default function MakeCallsPage() {
                 </div>
                 <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3 space-y-1.5">
                   <p className="font-medium text-[#0F172A] text-sm">Script</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <div className="h-7 w-7 rounded-lg bg-[#EEF2FF] flex items-center justify-center shrink-0">
                       <FileText className="h-3.5 w-3.5 text-[#4F46E5]" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-[#0F172A]">{DEFAULT_SCRIPT.name}</p>
-                      <p className="text-[11px] text-[#94A3B8]">{DEFAULT_SCRIPT.description}</p>
+                      <p className="text-xs font-medium text-[#0F172A]">
+                        {selectedScript?.name || 'No script selected'}
+                      </p>
+                      <p className="text-[11px] text-[#94A3B8]">
+                        {[selectedScript?.categoryID?.name, selectedScript?.subCategory].filter(Boolean).join(' · ') || '—'}
+                      </p>
                     </div>
                   </div>
+                  <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">Knowledge file:</span>{' '}
+                    {selectedKnowledgeFile?.name || 'No file'}
+                  </p>
+                  <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">First message mode:</span>{' '}
+                    {firstMessageMode || '—'}
+                  </p>
+                  {firstMessageMode !== 'assistant-speaks-first-with-model-generated-message' && (
+                    <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">First message:</span> {firstMessage || '—'}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">Voice message:</span> {voiceMessage || '—'}
+                  </p>
+                  <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">Background sound:</span> {backgroundSound || '—'}
+                  </p>
+                  <p className="text-[11px] text-[#64748B]">
+                    <span className="font-medium text-[#475569]">End call message:</span> {endCallMessage || '—'}
+                  </p>
                 </div>
                 <div className="rounded-lg border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3 space-y-1">
                   <p className="text-xs text-[#64748B]">

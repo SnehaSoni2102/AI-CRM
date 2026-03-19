@@ -14,7 +14,15 @@ export default function PersonasTab({
   personasError,
   deletingId,
   onDeletePersona,
+  currentPage = 1,
+  totalPages = 1,
+  totalCount = 0,
+  onPrevPage,
+  onNextPage,
+  onPageChange,
 }) {
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
+
   return (
     <TabsContent value="personas" className="space-y-6 mt-6">
       <div>
@@ -49,81 +57,127 @@ export default function PersonasTab({
       )}
 
       {!personasLoading && !personasError && personas.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {personas.map((persona, index) => (
-            <Card
-              key={persona._id}
-              className={cn(
-                'group overflow-hidden border-border/80 hover:border-primary/30 hover:shadow-lg transition-all duration-200 rounded-xl animate-fade-in',
-                persona.visible && 'ring-2 ring-primary/20 border-primary/50'
-              )}
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/15 transition-colors">
-                    <User className="h-6 w-6" />
-                  </div>
-                  {persona.visible && (
-                    <Badge variant="success" className="flex items-center gap-1 shrink-0">
-                      <Check className="h-3 w-3" />
-                      Active
-                    </Badge>
-                  )}
-                </div>
-                <CardTitle className="mt-4 text-lg leading-tight">{persona.voice || 'Unnamed Persona'}</CardTitle>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  <Badge variant="outline" className="text-xs font-normal">
-                    {persona.gender || 'Voice'}
-                  </Badge>
-                  {persona.provider && (
-                    <Badge variant="secondary" className="text-xs font-normal">
-                      {persona.provider}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Description</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                    {Array.isArray(persona.description)
-                      ? persona.description.join(' · ')
-                      : persona.description || 'No description'}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between text-sm py-1 border-t border-border/50">
-                  <span className="text-muted-foreground">Model</span>
-                  <span className="font-medium font-mono text-xs">{persona.model || '—'}</span>
-                </div>
-                <div className="flex justify-end pt-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDeletePersona(persona._id)
-                    }}
-                    disabled={deletingId === persona._id}
-                  >
-                    {deletingId === persona._id ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                        Removing…
-                      </span>
-                    ) : (
-                      <>
-                        <Trash2 className="h-4 w-4 mr-1.5" />
-                        Remove
-                      </>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {personas.map((persona, index) => (
+              <Card
+                key={persona._id}
+                className={cn(
+                  'group overflow-hidden border-border/80 hover:border-primary/30 hover:shadow-lg transition-all duration-200 rounded-xl animate-fade-in',
+                  persona.visible && 'ring-2 ring-primary/20 border-primary/50'
+                )}
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/15 transition-colors">
+                      <User className="h-6 w-6" />
+                    </div>
+                    {persona.visible && (
+                      <Badge variant="success" className="flex items-center gap-1 shrink-0">
+                        <Check className="h-3 w-3" />
+                        Active
+                      </Badge>
                     )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </div>
+                  <CardTitle className="mt-4 text-lg leading-tight">{persona.voice || 'Unnamed Persona'}</CardTitle>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {persona.gender || 'Voice'}
+                    </Badge>
+                    {persona.provider && (
+                      <Badge variant="secondary" className="text-xs font-normal">
+                        {persona.provider}
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Description</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {Array.isArray(persona.description)
+                        ? persona.description.join(' · ')
+                        : persona.description || 'No description'}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-sm py-1 border-t border-border/50">
+                    <span className="text-muted-foreground">Model</span>
+                    <span className="font-medium font-mono text-xs">{persona.model || '—'}</span>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDeletePersona(persona._id)
+                      }}
+                      disabled={deletingId === persona._id}
+                    >
+                      {deletingId === persona._id ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                          Removing…
+                        </span>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-1.5" />
+                          Remove
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              {pageNumbers.map((pageNum) => (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => onPageChange?.(pageNum)}
+                  disabled={personasLoading || pageNum === currentPage}
+                  className={cn(
+                    'inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-md text-sm font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                    pageNum === currentPage
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-foreground border-border hover:bg-muted/40'
+                  )}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onPrevPage}
+              disabled={currentPage === 1 || personasLoading}
+              className="inline-flex items-center h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-muted/40 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages} ({totalCount} total)
+            </span>
+            <button
+              type="button"
+              onClick={onNextPage}
+              disabled={currentPage === totalPages || personasLoading}
+              className="inline-flex items-center h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-muted/40 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+            </div>
+          </div>
+        </>
       )}
     </TabsContent>
   )
