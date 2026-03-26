@@ -1,0 +1,354 @@
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MessageSquare, Plus, Search, Tags, Trash2, Pencil, Eye } from 'lucide-react'
+import { TabsContent } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
+import { useToast } from '@/components/ui/toast'
+import api from '@/lib/api'
+import SmsCategoriesDialog from './SmsCategoriesDialog'
+import SmsTemplateEditorDialog from './SmsTemplateEditorDialog'
+import SmsTemplatePreviewDialog from './SmsTemplatePreviewDialog'
+
+const PAGE_SIZE = 9
+
+export default function SmsTemplatesTab({ onCreateNew, dataVersion = 0, onDataChanged }) {
+  const toast = useToast()
+  const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [previewId, setPreviewId] = useState(null)
+
+  const [templates, setTemplates] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  const [selectedIds, setSelectedIds] = useState([])
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+
+  const pageNumbers = useMemo(() => Array.from({ length: totalPages }, (_, i) => i + 1), [totalPages])
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
+  const fetchTemplates = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) })
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
+      const result = await api.get(`/api/smsBuilder?${params.toString()}`)
+      const list = result.data?.smsList ?? result.data
+      const pagination = result.data?.pagination ?? result.pagination
+
+      if (result.success && Array.isArray(list)) {
+        setTemplates(list)
+        const total = pagination?.total ?? list.length
+        setTotalCount(total)
+        setTotalPages(Math.max(1, Math.ceil(total / PAGE_SIZE)))
+        setSelectedIds([])
+      } else {
+        setError(result.error || 'Failed to fetch SMS templates')
+      }
+    } catch (e) {
+      console.error(e)
+      setError('Failed to fetch SMS templates')
+    } finally {
+      setLoading(false)
+    }
+  }, [page, debouncedSearch])
+
+  useEffect(() => {
+    fetchTemplates()
+  }, [fetchTemplates, dataVersion])
+
+  const toggleSelected = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === templates.length) setSelectedIds([])
+    else setSelectedIds(templates.map((t) => t._id).filter(Boolean))
+  }
+
+  const deleteOne = async (tpl) => {
+    if (!tpl?._id) return
+    if (!confirm(`Delete template "${tpl.name}"? This cannot be undone.`)) return
+    setDeletingId(tpl._id)
+    try {
+      const result = await api.delete(`/api/smsBuilder/${tpl._id}`)
+      if (!result.success) {
+        toast.error({ title: 'Delete failed', message: result.error || 'Could not delete template.' })
+        return
+      }
+      toast.success({ title: 'Deleted', message: 'Template deleted successfully.' })
+      onDataChanged?.()
+      if (templates.length === 1 && page > 1) setPage((p) => Math.max(1, p - 1))
+      else fetchTemplates()
+    } catch (e) {
+      console.error(e)
+      toast.error({ title: 'Error', message: 'Could not delete template.' })
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const bulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm(`Delete ${selectedIds.length} templates? This cannot be undone.`)) return
+    setBulkDeleting(true)
+    try {
+      // api.delete() cannot send a body; use request directly.
+      const result = await api.request('/api/smsBuilder', {
+        method: 'DELETE',
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+      if (!result.success) {
+        toast.error({ title: 'Bulk delete failed', message: result.error || 'Could not delete templates.' })
+        return
+      }
+      toast.success({ title: 'Deleted', message: 'Templates deleted successfully.' })
+      onDataChanged?.()
+      fetchTemplates()
+    } catch (e) {
+      console.error(e)
+      toast.error({ title: 'Error', message: 'Could not delete templates.' })
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  return (
+    <TabsContent value="templates" className="space-y-6 mt-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Manage SMS templates and categories.</p>
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 shrink-0">
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => setCategoriesOpen(true)}>
+            <Tags className="h-4 w-4 mr-2" />
+            Categories
+          </Button>
+          <Button variant="gradient" className="w-full sm:w-auto" onClick={onCreateNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create template
+          </Button>
+        </div>
+      </div>
+
+      <SmsCategoriesDialog
+        open={categoriesOpen}
+        onClose={() => setCategoriesOpen(false)}
+        onChanged={() => {
+          fetchTemplates()
+          onDataChanged?.()
+        }}
+      />
+      <SmsTemplateEditorDialog open={!!editingId} onClose={() => setEditingId(null)} templateId={editingId} onSaved={fetchTemplates} />
+      <SmsTemplatePreviewDialog open={!!previewId} onClose={() => setPreviewId(null)} templateId={previewId} />
+
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="relative max-w-sm w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search templates…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={toggleSelectAll}
+            disabled={templates.length === 0 || loading}
+          >
+            {selectedIds.length === templates.length && templates.length > 0 ? 'Unselect all' : 'Select all'}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full sm:w-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={bulkDelete}
+            disabled={selectedIds.length === 0 || bulkDeleting}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {bulkDeleting ? 'Deleting…' : `Delete (${selectedIds.length})`}
+          </Button>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-16">
+          <LoadingSpinner size="lg" text="Loading templates…" />
+        </div>
+      )}
+
+      {error && !loading && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="py-8 text-center">
+            <p className="text-sm font-medium text-destructive">{error}</p>
+            <p className="text-xs text-muted-foreground mt-1">Check your connection and try again.</p>
+            <div className="mt-4 flex justify-center">
+              <Button variant="outline" onClick={fetchTemplates}>
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && templates.length === 0 && (
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <p className="font-medium text-muted-foreground">No SMS templates yet</p>
+            <p className="text-sm text-muted-foreground mt-1">Create your first template to reuse messages quickly.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && templates.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {templates.map((tpl, index) => (
+              <Card
+                key={tpl._id}
+                className={cn(
+                  'group overflow-hidden border transition-all duration-200 animate-fade-in rounded-2xl',
+                  'border-border/80 hover:border-primary/40 hover:shadow-md bg-card'
+                )}
+                style={{ animationDelay: `${index * 0.04}s` }}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(tpl._id)}
+                          onChange={() => toggleSelected(tpl._id)}
+                          className="h-4 w-4"
+                        />
+                        <CardTitle className="text-base line-clamp-2">{tpl.name || 'Untitled template'}</CardTitle>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {tpl.categoryID?.name || 'Uncategorized'}
+                        </Badge>
+                        {tpl.subCategory && (
+                          <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">
+                            {tpl.subCategory}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-3 pt-0">
+                  <p className="text-xs text-muted-foreground line-clamp-4 whitespace-pre-wrap">
+                    {tpl.message || '—'}
+                  </p>
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50">
+                    <Button
+                      variant="gradient"
+                      size="sm"
+                      className="text-xs flex-1"
+                      onClick={() => setPreviewId(tpl._id)}
+                      title="Preview"
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1.5" />
+                      Preview
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex-1"
+                      onClick={() => setEditingId(tpl._id)}
+                      title="Edit"
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => deleteOne(tpl)}
+                      disabled={deletingId === tpl._id}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      {deletingId === tpl._id ? 'Deleting…' : 'Delete'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              {pageNumbers.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setPage(n)}
+                  disabled={loading || n === page}
+                  className={cn(
+                    'inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-md text-sm font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                    n === page
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background border-border hover:bg-muted/40'
+                  )}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || loading}
+                className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} ({totalCount} total)
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || loading}
+                className="h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </TabsContent>
+  )
+}
+
