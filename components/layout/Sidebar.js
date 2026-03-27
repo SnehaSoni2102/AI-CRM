@@ -242,13 +242,24 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                   }}
                 >
                   {hasChildren ? (
-                    <Link
-                      href={item.href}
-                      onClick={() => {
-                        setOpenMenu(null)
-                        setMenuAnchorRect(null)
-                        setMenuPos(null)
-                        setMobileOpen(false)
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        // Parent with submenu should not navigate; only open/toggle list.
+                        e.preventDefault()
+                        if (mobileOpen) {
+                          setOpenMenu((prev) => {
+                            const next = prev === item.name ? null : item.name
+                            if (next) {
+                              setMenuAnchorRect(e.currentTarget.getBoundingClientRect())
+                              setMenuPos(null)
+                            } else {
+                              setMenuAnchorRect(null)
+                              setMenuPos(null)
+                            }
+                            return next
+                          })
+                        }
                       }}
                       onMouseEnter={(e) => {
                         if (hasChildren && !mobileOpen) openDropdownFor(item.name, e.currentTarget)
@@ -258,7 +269,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                         'hover:bg-white/20',
                         isActive && 'bg-white/20'
                       )}
-                      aria-current={isActive ? 'page' : undefined}
+                      aria-expanded={openMenu === item.name}
+                      aria-haspopup="menu"
                     >
                       <img
                         src={item.iconSrc}
@@ -269,7 +281,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                         aria-hidden
                       />
                       <span className={cn(sidebarLabelClass, labelClass)}>{item.name}</span>
-                    </Link>
+                    </button>
                   ) : (
                     <Link
                       href={item.href}

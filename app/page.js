@@ -93,7 +93,7 @@ function SectionLabel({ children }) {
         fontSize: 16,
         letterSpacing: '0.12em',
         textTransform: 'uppercase',
-        color: '#9224EF',
+        color: 'var(--studio-primary)',
         marginBottom: 8,
       }}
     >

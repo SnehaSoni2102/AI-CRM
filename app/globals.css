@@ -12,7 +12,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 330 74% 45%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -24,14 +24,20 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 330 74% 45%;
     --radius: 0.5rem;
     /* Studio CRM brand colors (used across the app) */
-    --studio-primary: #9224EF;
-    --studio-primary-light: #F4E9FD;
+    --studio-primary: #C81D77;
+    --studio-primary-light: #FCE7F3;
     --studio-gradient: #CE32E0;
-    --studio-gradient-css: linear-gradient(90deg, #9224EF 0%, #CE32E0 100%);
+    --studio-gradient-css: linear-gradient(90deg, #C81D77 0%, #CE32E0 100%);
     --sidebar-gradient-css: linear-gradient(180deg, #F72585 0%, #4CC9F0 100%);
+    --bar-gradient-css: linear-gradient(180deg, #6E1041 0%, #F72585 100%);
+    --side-gradient-css: linear-gradient(180deg, #ADE6F8 0%, #45B7DA 100%);
+    --bar-gradient-start: #6E1041;
+    --bar-gradient-end: #F72585;
+    --side-gradient-start: #ADE6F8;
+    --side-gradient-end: #45B7DA;
   }
 
   .dark {
@@ -139,11 +145,17 @@
 @layer utilities {
   /* Theme toggle example (apply to <html> or <body>) */
   .theme-dancestudio {
-    --studio-primary: #9224EF;
-    --studio-primary-light: #F4E9FD;
+    --studio-primary: #C81D77;
+    --studio-primary-light: #FCE7F3;
     --studio-gradient: #CE32E0;
-    --studio-gradient-css: linear-gradient(90deg, #9224EF 0%, #CE32E0 100%);
+    --studio-gradient-css: linear-gradient(90deg, #C81D77 0%, #CE32E0 100%);
     --sidebar-gradient-css: linear-gradient(180deg, #F72585 0%, #4CC9F0 100%);
+    --bar-gradient-css: linear-gradient(180deg, #6E1041 0%, #F72585 100%);
+    --side-gradient-css: linear-gradient(180deg, #ADE6F8 0%, #45B7DA 100%);
+    --bar-gradient-start: #6E1041;
+    --bar-gradient-end: #F72585;
+    --side-gradient-start: #ADE6F8;
+    --side-gradient-end: #45B7DA;
   }
 
   /* Background utilities */
