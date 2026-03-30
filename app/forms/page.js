@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { formTemplates } from '@/data/dummyData'
 import { formatDate } from '@/lib/utils'
 import StylePanel from '@/components/forms/StylePanel'
+import { getCurrentUser } from '@/lib/auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   DndContext,
@@ -149,12 +150,16 @@ function SortableFieldItem({ field, isSelected, onSelect, onRemove }) {
           <GripVertical className="h-4 w-4 text-slate-500" />
         </button>
         <button
-          className="p-1.5 hover:bg-red-50 rounded bg-white border border-slate-200 shadow-sm"
+          className={`p-1.5 rounded bg-white border border-slate-200 shadow-sm ${
+            field.locked ? 'opacity-40 cursor-not-allowed' : 'hover:bg-red-50'
+          }`}
           onClick={(e) => {
             e.stopPropagation()
+            if (field.locked) return
             onRemove(field.id)
           }}
-          title="Remove field"
+          title={field.locked ? 'This field is required' : 'Remove field'}
+          disabled={field.locked}
         >
           <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-500" />
         </button>
@@ -291,10 +296,27 @@ function FormsPageInner() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const activeTab = searchParams.get('view') || 'templates'
-  const [formFields, setFormFields] = useState([
-    { id: '1', type: 'text', label: 'Full Name', placeholder: 'Enter your name', required: true, styles: {} },
-    { id: '2', type: 'email', label: 'Email Address', placeholder: 'your@email.com', required: true, styles: {} },
-  ])
+  const currentUser = getCurrentUser()
+  const [organisationID] = useState(() => searchParams.get('organisationID') || currentUser?.organisationID || '')
+  const [formID] = useState(() => {
+    const fromQuery = searchParams.get('formID')
+    if (fromQuery) return fromQuery
+    if (typeof crypto !== 'undefined' && crypto?.randomUUID) return crypto.randomUUID()
+    return Date.now().toString()
+  })
+  const REQUIRED_SYSTEM_FIELDS = [
+    { id: 'sys_name', type: 'text', name: 'name', label: 'Name', placeholder: 'Enter your name', required: true, styles: {}, locked: true },
+    { id: 'sys_email', type: 'email', name: 'email', label: 'Email', placeholder: 'you@email.com', required: true, styles: {}, locked: true },
+    { id: 'sys_phone', type: 'tel', name: 'phoneNumber', label: 'Phone Number', placeholder: 'Enter phone number', required: true, styles: {}, locked: true },
+    { id: 'sys_location', type: 'text', name: 'location', label: 'Location', placeholder: 'Enter location', required: true, styles: {}, locked: true },
+    // hidden required fields for backend
+    { id: 'sys_org', type: 'hidden', name: 'organisationID', label: 'organisationID', placeholder: '', required: true, styles: {}, locked: true, hidden: true },
+    { id: 'sys_form', type: 'hidden', name: 'formID', label: 'formID', placeholder: '', required: true, styles: {}, locked: true, hidden: true },
+    { id: 'sys_locid', type: 'hidden', name: 'locationID', label: 'locationID', placeholder: '', required: false, styles: {}, locked: true, hidden: true },
+    { id: 'sys_url', type: 'hidden', name: 'url', label: 'url', placeholder: '', required: false, styles: {}, locked: true, hidden: true },
+  ]
+
+  const [formFields, setFormFields] = useState(() => [...REQUIRED_SYSTEM_FIELDS])
   const [selectedField, setSelectedField] = useState(null)
   const [activeId, setActiveId] = useState(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -324,6 +346,13 @@ function FormsPageInner() {
     })
   )
 
+  const RESERVED_FIELD_NAMES = new Set(['organisationID', 'formID', 'name', 'email', 'phoneNumber', 'location', 'locationID'])
+
+  const getFieldNameForHtml = (field) => {
+    if (field?.name) return field.name
+    return (field?.label || field?.id || 'field').toLowerCase().replace(/\s+/g, '_')
+  }
+
   const addField = (type) => {
     const fieldType = fieldTypes.find(ft => ft.id === type)
     const newField = {
@@ -346,12 +375,16 @@ function FormsPageInner() {
       id: `${templateId}-${index}-${Date.now()}`,
       styles: {},
     }))
-    setFormFields(normalized)
+    // Prevent template fields from duplicating reserved backend field names (e.g. a second "email")
+    const filtered = normalized.filter((f) => !RESERVED_FIELD_NAMES.has(getFieldNameForHtml(f)))
+    setFormFields([...REQUIRED_SYSTEM_FIELDS, ...filtered])
     setSelectedField(normalized[0]?.id || null)
     setActiveTab('builder')
   }
 
   const removeField = (id) => {
+    const field = formFields.find((f) => f.id === id)
+    if (field?.locked) return
     setFormFields(formFields.filter((f) => f.id !== id))
     if (selectedField === id) setSelectedField(null)
   }
@@ -404,6 +437,19 @@ function FormsPageInner() {
   }
 
   const generateFieldHTML = (field) => {
+    if (field.type === 'hidden' || field.hidden) {
+      if (field.name === 'organisationID') {
+        return `<input type="hidden" name="organisationID" value="${organisationID}" />`
+      }
+      if (field.name === 'formID') {
+        return `<input type="hidden" name="formID" value="${formID}" />`
+      }
+      if (field.name === 'locationID') {
+        return `<input type="hidden" name="locationID" value="" />`
+      }
+      return `<input type="hidden" name="${field.name || field.id}" value="" />`
+    }
+
     const fieldStyles = field.styles || {}
     const styleString = `
       background-color: ${fieldStyles.backgroundColor || '#ffffff'};
@@ -440,10 +486,11 @@ function FormsPageInner() {
     const labelStyleString = labelStyleParts.join('; ')
 
     let fieldHTML = ''
+    const fieldName = getFieldNameForHtml(field)
     
     if (field.type === 'textarea') {
       fieldHTML = `<textarea 
-        name="${field.label.toLowerCase().replace(/\s+/g, '_')}" 
+        name="${fieldName}" 
         placeholder="${field.placeholder || ''}" 
         ${field.required ? 'required' : ''}
         style="${styleString}"
@@ -456,7 +503,7 @@ function FormsPageInner() {
         return `<option value="${v}">${l}</option>`
       }).join('')
       fieldHTML = `<select 
-        name="${field.label.toLowerCase().replace(/\s+/g, '_')}" 
+        name="${fieldName}" 
         ${field.required ? 'required' : ''}
         style="${styleString}"
       >
@@ -469,12 +516,12 @@ function FormsPageInner() {
         const l = (opt.label || opt.value || `Option ${idx+1}`).toString().replace(/"/g, '&quot;')
         const id = `${field.id}_${v}`
         return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-          <input type="checkbox" name="${field.label.toLowerCase().replace(/\s+/g, '_')}[]" id="${id}" value="${v}" ${field.required ? 'required' : ''} style="width: auto;" />
+          <input type="checkbox" name="${fieldName}[]" id="${id}" value="${v}" ${field.required ? 'required' : ''} style="width: auto;" />
           <label for="${id}" style="font-size:0.875rem; color:#475569;">${l}</label>
         </div>`
       }).join('')
       fieldHTML = optsHtml || `<div style="display:flex; align-items:center; gap:0.5rem;">
-        <input type="checkbox" name="${field.label.toLowerCase().replace(/\s+/g, '_')}" id="${field.id}" ${field.required ? 'required' : ''} style="width: auto;" />
+        <input type="checkbox" name="${fieldName}" id="${field.id}" ${field.required ? 'required' : ''} style="width: auto;" />
         <label for="${field.id}" style="font-size:0.875rem; color:#475569;">${field.placeholder || 'Checkbox option'}</label>
       </div>`
     } else if (field.type === 'rating') {
@@ -482,7 +529,7 @@ function FormsPageInner() {
         ${[1, 2, 3, 4, 5].map(star => `
           <input 
             type="radio" 
-            name="${field.label.toLowerCase().replace(/\s+/g, '_')}" 
+            name="${fieldName}" 
             value="${star}" 
             id="${field.id}_${star}"
             ${field.required ? 'required' : ''}
@@ -499,7 +546,7 @@ function FormsPageInner() {
     } else {
       fieldHTML = `<input 
         type="${field.type}" 
-        name="${field.label.toLowerCase().replace(/\s+/g, '_')}" 
+        name="${fieldName}" 
         placeholder="${field.placeholder || ''}" 
         ${field.required ? 'required' : ''}
         style="${styleString}"
@@ -522,7 +569,29 @@ function FormsPageInner() {
       return ''
     }
 
-    const fieldsHTML = formFields.map(field => generateFieldHTML(field)).join('\n')
+    // De-dupe by HTML field name to avoid FormData arrays + duplicated UI fields
+    const seenNames = new Set()
+    const fieldsHTML = formFields
+      .filter((field) => {
+        const key = getFieldNameForHtml(field)
+        if (!key) return true
+        if (seenNames.has(key)) return false
+        seenNames.add(key)
+        return true
+      })
+      .map((field) => generateFieldHTML(field))
+      .join('\n')
+    // Analytics snippet injected into exported HTML <head>
+    const gtagScript = `  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4PKNTJ6CWT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4PKNTJ6CWT');
+  </script>
+`
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -611,30 +680,89 @@ function FormsPageInner() {
       opacity: 0.8;
     }
   </style>
+${gtagScript}
 </head>
 <body>
   <div class="form-container">
-    <form id="exportedForm" action="#" method="POST" onsubmit="event.preventDefault(); alert('Form submitted! (This is a demo - configure your form action URL)');">
+    <form id="exportedForm" action="#" method="POST">
       ${fieldsHTML}
       <button type="submit" class="submit-btn">${submitButton.label}</button>
     </form>
   </div>
   <script>
-    // Rating star interaction
-    document.querySelectorAll('input[type="radio"][name*="rating"]').forEach(radio => {
-      radio.addEventListener('change', function() {
-        const name = this.name;
-        const value = parseInt(this.value);
-        document.querySelectorAll(\`input[type="radio"][name="\${name}"]\`).forEach((r, index) => {
-          const label = document.querySelector(\`label[for="\${r.id}"]\`);
-          if (index < value) {
-            label.style.color = '#fbbf24';
-          } else {
-            label.style.color = '#cbd5e1';
+    (function() {
+      const form = document.getElementById('exportedForm');
+      if (form) {
+        form.addEventListener('submit', async function(event) {
+          event.preventDefault();
+
+          // Capture page URL (prefer top-level URL; fallback to referrer / iframe URL)
+          let capturedUrl = '';
+          try {
+            capturedUrl = (window.top && window.top.location && window.top.location.href) ? window.top.location.href : '';
+          } catch (e) {
+            capturedUrl = '';
+          }
+          if (!capturedUrl) capturedUrl = document.referrer || '';
+          if (!capturedUrl) capturedUrl = window.location.href || '';
+
+          const urlInput = form.querySelector('input[name="url"]');
+          if (urlInput) urlInput.value = capturedUrl;
+
+          const formData = new FormData(form);
+          const payload = {};
+
+          formData.forEach((value, key) => {
+            const normalizedKey = key.endsWith('[]') ? key.slice(0, -2) : key;
+            if (payload[normalizedKey] === undefined) payload[normalizedKey] = value;
+            else if (Array.isArray(payload[normalizedKey])) payload[normalizedKey].push(value);
+            else payload[normalizedKey] = [payload[normalizedKey], value];
+          });
+
+          const pickFirst = (v) => Array.isArray(v) ? v[0] : v;
+          payload.name = payload.name || pickFirst(payload.full_name) || pickFirst(payload.student_name) || pickFirst(payload.parent_name);
+          payload.email = payload.email || pickFirst(payload.email_address) || pickFirst(payload.parent_email);
+          payload.phone = payload.phone || pickFirst(payload.phone_number) || pickFirst(payload.phone);
+          payload.source = payload.source || 'Website';
+          payload.url = capturedUrl;
+          // Safety: ensure backend required ids are scalar even if duplicated somehow
+          payload.organisationID = pickFirst(payload.organisationID);
+          payload.formID = pickFirst(payload.formID);
+
+          try {
+            const res = await fetch('http://localhost:8080/api/lead/form', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const body = await res.json().catch(() => null);
+            if (res.ok) {
+              alert('Form submitted successfully!');
+            } else {
+              alert(body?.message || 'Form submission failed');
+            }
+          } catch (err) {
+            alert('Network error while submitting form');
           }
         });
+      }
+
+      // Rating star interaction
+      document.querySelectorAll('input[type="radio"][name*="rating"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const name = this.name;
+          const value = parseInt(this.value);
+          document.querySelectorAll('input[type="radio"][name="' + name + '"]').forEach((r, index) => {
+            const label = document.querySelector('label[for="' + r.id + '"]');
+            if (index < value) {
+              label.style.color = '#fbbf24';
+            } else {
+              label.style.color = '#cbd5e1';
+            }
+          });
+        });
       });
-    });
+    })();
   </script>
 </body>
 </html>`
@@ -921,8 +1049,8 @@ function FormsPageInner() {
                         </div>
                       ) : (
                         <div className="space-y-4 pl-10 pr-2">
-                          <SortableContext items={formFields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
-                            {formFields.map((field) => (
+                          <SortableContext items={formFields.filter((f) => !f.hidden && f.type !== 'hidden').map((f) => f.id)} strategy={verticalListSortingStrategy}>
+                            {formFields.filter((f) => !f.hidden && f.type !== 'hidden').map((field) => (
                               <SortableFieldItem
                                 key={field.id}
                                 field={field}
@@ -1124,35 +1252,13 @@ function FormsPageInner() {
                 <p className="text-slate-500">No fields to preview. Add fields to your form first.</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg p-8 shadow-sm border border-slate-200 space-y-4" style={{ maxWidth: '600px', margin: '0 auto' }}>
-                {formFields.map(field => renderPreviewField(field))}
-                <div className="pt-6 border-t border-slate-200">
-                  <button 
-                    className="w-full text-white font-medium py-3 px-6 rounded-md hover:opacity-90 transition-opacity"
-                    style={{
-                      background: submitButton.styles?.backgroundColor || '#2563eb',
-                      fontFamily: submitButton.styles?.fontFamily,
-                      fontSize: submitButton.styles?.fontSize,
-                      fontWeight: submitButton.styles?.fontWeight,
-                      color: submitButton.styles?.color || 'white',
-                      padding: submitButton.styles?.paddingTop ? `${submitButton.styles.paddingTop} ${submitButton.styles.paddingRight || submitButton.styles.paddingTop} ${submitButton.styles.paddingBottom || submitButton.styles.paddingTop} ${submitButton.styles.paddingLeft || submitButton.styles.paddingTop}` : undefined,
-                      ...(submitButton.styles?.borderWidth ? { 
-                        borderWidth: submitButton.styles.borderWidth,
-                        borderStyle: submitButton.styles.borderStyle || 'solid',
-                        borderColor: submitButton.styles.borderColor || '#e2e8f0'
-                      } : { border: 'none' }),
-                      borderRadius: submitButton.styles?.borderRadius,
-                      width: submitButton.styles?.width || '100%',
-                      margin: submitButton.styles?.marginTop ? `${submitButton.styles.marginTop} ${submitButton.styles.marginRight || '0'} ${submitButton.styles.marginBottom || '0'} ${submitButton.styles.marginLeft || '0'}` : undefined,
-                      /* typography support */
-                      letterSpacing: submitButton.styles?.letterSpacing,
-                      textTransform: submitButton.styles?.textTransform,
-                      textAlign: submitButton.styles?.textAlign,
-                    }}
-                  >
-                    {submitButton.label}
-                  </button>
-                </div>
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200" style={{ maxWidth: '600px', margin: '0 auto', overflow: 'hidden' }}>
+                <iframe
+                  title="Form Preview"
+                  sandbox="allow-scripts allow-forms allow-same-origin"
+                  srcDoc={generateExportedHTML()}
+                  style={{ width: '100%', height: '620px', border: 0, display: 'block' }}
+                />
               </div>
             )}
           </div>
