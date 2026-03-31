@@ -103,7 +103,7 @@ export default function PersonasTab({
     setPreviewingId(persona._id)
     try {
       const body = {
-        text: 'Hi, thanks for calling. How can I help you today?',
+        text: 'Hi. This is Kira from Dance With Me. You filled out an inquiry about dance lessons at our studio. Is now a good time to chat?',
         voiceId: persona.voiceId,
         provider: persona.provider,
       }
