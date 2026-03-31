@@ -206,7 +206,17 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         {/* Welcome section */}
         <div className="flex flex-col items-center gap-5 w-[112px]">
           <div className="flex flex-col justify-center items-center gap-1">
-            <div className="w-8 h-8 rounded-full bg-[#6710C2]" aria-hidden />
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-[#6710C2]" aria-hidden>
+              <Image
+                src="/figma/sidebar/images/logo.png"
+                alt=""
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+                unoptimized
+                priority
+              />
+            </div>
             <div className="text-white font-medium" style={{ fontSize: 14, lineHeight: '20px' }}>
               {studioName}
             </div>
