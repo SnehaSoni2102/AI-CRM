@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, Heart, Mic, Pencil, Search, Trash2, User } from 'lucide-react'
+import { Check, Copy, Heart, Mic, Pencil, Search, Trash2, User, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { TabsContent } from '@/components/ui/tabs'
@@ -13,6 +13,13 @@ import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import Switch from '@/components/ui/switch'
 import api from '@/lib/api'
+import { getToken } from '@/lib/auth'
+
+const API_BASE = (
+  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL
+    ? process.env.NEXT_PUBLIC_API_BASE_URL
+    : 'http://localhost:8080'
+).replace(/\/$/, '')
 
 const GENDER_COLORS = {
   male: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -118,6 +125,87 @@ export default function PersonasTab({
   const [similarityBoost, setSimilarityBoost] = useState(0.5)
   const [stability, setStability] = useState(0.5)
   const [modalSaving, setModalSaving] = useState(false)
+
+  // ── voice preview ──
+  // Only tracks which persona is currently *loading* (fetching audio from API).
+  // Once audio starts, the button resets to normal. audioRef lets us stop any
+  // in-progress playback when a new preview is requested.
+  const [previewingId, setPreviewingId] = useState(null)
+  const audioRef = useRef(null)
+
+  const stopCurrentAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current = null
+    }
+  }
+
+  const handlePreview = async (persona) => {
+    // Always stop any currently playing audio first
+    stopCurrentAudio()
+
+    // If this persona was already loading, cancel (debounce double-click)
+    if (previewingId === persona._id) return
+
+    setPreviewingId(persona._id)
+    try {
+      const body = {
+        text: 'Hi. This is Kira from Dance With Me. You filled out an inquiry about dance lessons at our studio. Is now a good time to chat?',
+        voiceId: persona.voiceId,
+        provider: persona.provider,
+      }
+      // Only pass stability/similarityBoost for 11labs
+      if (persona.provider === '11labs') {
+        if (persona.stability != null) body.stability = persona.stability
+        if (persona.similarityBoost != null) body.similarityBoost = persona.similarityBoost
+      }
+
+      // Use fetch directly — the preview response has { success, audioUrl } at the
+      // top level (not nested in `data`), so we bypass the api client wrapper.
+      const res = await fetch(`${API_BASE}/api/voice/preview`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(body),
+      })
+
+      const json = await res.json().catch(() => null)
+
+      if (!res.ok || !json?.success || !json?.audioUrl) {
+        toast.error({
+          title: 'Preview failed',
+          message: json?.message || `Server error (${res.status})`,
+        })
+        return
+      }
+
+      const audio = new Audio(json.audioUrl)
+      audioRef.current = audio
+
+      audio.onerror = () => {
+        audioRef.current = null
+        toast.error({ title: 'Playback error', message: 'Could not play the preview audio.' })
+      }
+      audio.onended = () => { audioRef.current = null }
+
+      // Reset button to normal *before* playing so the loading spinner clears immediately
+      setPreviewingId(null)
+
+      audio.play().catch(() => {
+        audioRef.current = null
+        toast.error({ title: 'Playback blocked', message: 'Browser blocked audio autoplay. Try clicking again.' })
+      })
+    } catch (e) {
+      console.error(e)
+      toast.error({ title: 'Preview failed', message: 'Could not reach the preview service.' })
+    } finally {
+      // Ensure spinner always clears even on unexpected throws
+      setPreviewingId(null)
+    }
+  }
 
   const openDuplicate = (persona) => {
     setTargetPersona(persona)
@@ -363,15 +451,38 @@ export default function PersonasTab({
                     </div>
                   )}
 
+                  {/* Preview button — available for all personas */}
+                  <div className="mt-auto pt-1 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs h-8"
+                      onClick={() => handlePreview(persona)}
+                      disabled={previewingId === persona._id}
+                    >
+                      {previewingId === persona._id ? (
+                        <>
+                          <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin mr-1.5" />
+                          Loading…
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="h-3.5 w-3.5 mr-1.5" />
+                          Preview voice
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
                   {/* Actions
                       Rules:
                       - Duplicate: only for provider === "11labs"
                       - Edit:      only for provider === "11labs" AND isDefault === false
                       - Delete:    only for isDefault === false
                   */}
-                  {(p.provider === '11labs' || !p.isDefault) && (
-                    <div className="flex items-center gap-2 pt-1 border-t border-border/50 mt-auto">
-                      {p.provider === '11labs' && (
+                  {(persona.provider === '11labs' || !persona.isDefault) && (
+                    <div className="flex items-center gap-2 border-t border-border/50 pt-1">
+                      {persona.provider === '11labs' && (
                         <Button
                           variant="outline"
                           size="sm"
