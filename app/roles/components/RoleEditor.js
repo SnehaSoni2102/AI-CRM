@@ -38,7 +38,7 @@ export default function RoleEditor({
     <div
       className={cn(
         'flex flex-col',
-        !embedded && 'col-span-1 md:col-span-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm'
+        !embedded && 'col-span-1 md:col-span-4 rounded-xl border border-border bg-card p-4 shadow-sm'
       )}
     >
       {!showCompactHeader && (
@@ -48,10 +48,10 @@ export default function RoleEditor({
               {editingRole?.role?.charAt(0)?.toUpperCase() || 'R'}
             </div>
             <div>
-              <h3 className="truncate text-lg font-semibold text-slate-900">
+              <h3 className="truncate text-lg font-semibold text-foreground">
                 {editingRole?.role || 'Role'}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground/80">
                 {isCreating ? 'Creating new role' : editingRole?._id ? 'Editing role' : 'View role'}
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function RoleEditor({
       )}
 
       {!editingRole && !isCreating && (
-        <p className="mb-4 text-sm text-slate-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           Select a role to view or edit its permissions.
         </p>
       )}
@@ -86,7 +86,7 @@ export default function RoleEditor({
           <div className="space-y-2">
           
             <div>
-              <label className="my-1.5 block text-sm font-medium text-slate-700">
+              <label className="my-1.5 block text-sm font-medium text-foreground">
                 Name
               </label>
               <Input
@@ -100,10 +100,10 @@ export default function RoleEditor({
 
           {/* Permissions */}
           <div className="space-y-4 border-t border-slate-200 pt-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-900">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-foreground">
               Permissions
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Choose read (R), write (W), edit (E), and delete (D) for each resource.
             </p>
 
@@ -120,10 +120,10 @@ export default function RoleEditor({
                       <button
                         type="button"
                         onClick={() => toggleSection(sectionKey)}
-                        className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold text-slate-800 hover:bg-slate-100/80 transition-colors"
+                        className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold text-foreground hover:bg-muted/80 transition-colors"
                       >
                         <span>{sectionVal.name}</span>
-                        <span className="text-slate-400">
+                        <span className="text-muted-foreground/80">
                           {isExpanded ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
@@ -132,23 +132,23 @@ export default function RoleEditor({
                         </span>
                       </button>
                       {isExpanded && (
-                        <div className="border-t border-slate-200 bg-white">
+                        <div className="border-t border-border bg-card">
                           <Table>
                             <TableHeader>
                               <TableRow className="bg-slate-50 hover:bg-slate-50">
-                                <TableHead className="font-semibold text-slate-700">
+                                <TableHead className="font-semibold text-foreground">
                                   Resource
                                 </TableHead>
-                                <TableHead className="w-20 text-center text-xs font-medium text-slate-600">
+                                <TableHead className="w-20 text-center text-xs font-medium text-muted-foreground">
                                   Read
                                 </TableHead>
-                                <TableHead className="w-20 text-center text-xs font-medium text-slate-600">
+                                <TableHead className="w-20 text-center text-xs font-medium text-muted-foreground">
                                   Write
                                 </TableHead>
-                                <TableHead className="w-20 text-center text-xs font-medium text-slate-600">
+                                <TableHead className="w-20 text-center text-xs font-medium text-muted-foreground">
                                   Edit
                                 </TableHead>
-                                <TableHead className="w-20 text-center text-xs font-medium text-slate-600">
+                                <TableHead className="w-20 text-center text-xs font-medium text-muted-foreground">
                                   Delete
                                 </TableHead>
                               </TableRow>
@@ -169,9 +169,9 @@ export default function RoleEditor({
                                   >
                                     <TableCell>
                                       <div>
-                                        <p className="font-medium text-slate-900">{permKey === '*' ? 'Master' : permKey}</p>
+                                        <p className="font-medium text-foreground">{permKey === '*' ? 'Master' : permKey}</p>
                                         {permVal.description && (
-                                          <p className="text-xs text-slate-500">
+                                          <p className="text-xs text-muted-foreground">
                                             {permVal.description}
                                           </p>
                                         )}

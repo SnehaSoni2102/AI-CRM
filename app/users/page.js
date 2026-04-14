@@ -350,10 +350,10 @@ export default function UsersPage() {
 
         {/* Users (row layout) */}
         {!loading && (
-          <div className="rounded-xl border border-[#E2E8F0] bg-white overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-[#E2E8F0] hover:bg-transparent bg-[#F8FAFC]">
+                <TableRow className="border-b border-border hover:bg-transparent bg-muted/40">
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Name</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Email</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Role</TableHead>
@@ -377,12 +377,12 @@ export default function UsersPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <div className="font-medium text-slate-900 truncate">{user.name}</div>
-                          <div className="text-xs text-slate-500 truncate">{user.title}</div>
+                          <div className="font-medium text-foreground truncate">{user.name}</div>
+                          <div className="text-xs text-muted-foreground truncate">{user.title}</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-sm text-slate-600">
+                    <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                       <span className="truncate block max-w-[260px]">{user.email}</span>
                     </TableCell>
                     <TableCell className="py-3 px-4">
@@ -396,7 +396,7 @@ export default function UsersPage() {
                         {user.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-sm text-slate-600">
+                    <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                       {user.createdAt ? formatDate(user.createdAt) : 'N/A'}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right">
@@ -446,16 +446,16 @@ export default function UsersPage() {
 
         {!loading && displayedUsers.length === 0 && (
           <div className="text-center py-12">
-            <UserCog className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500">No users found</p>
-            <p className="text-sm text-slate-400 mt-1">Create your first user to get started</p>
+            <UserCog className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No users found</p>
+            <p className="text-sm text-muted-foreground/80 mt-1">Create your first user to get started</p>
           </div>
         )}
 
         {/* Pagination */}
         {!loading && total > 0 && (
           <div className="flex flex-row items-center border-t border-slate-200 pt-4">
-            <div className="text-sm text-slate-600 w-52 flex-shrink-0">
+            <div className="text-sm text-muted-foreground w-52 flex-shrink-0">
               Showing page {currentPage} of {totalPages} ({total} total {total === 1 ? 'user' : 'users'})
             </div>
             <div className="flex-1 flex justify-center">
@@ -519,7 +519,7 @@ export default function UsersPage() {
             {loadingUserDetails ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner size="md" />
-                <p className="text-slate-500 ml-4">Loading user details...</p>
+                <p className="text-muted-foreground ml-4">Loading user details...</p>
               </div>
             ) : selectedUser ? (
               <div className="space-y-6 mt-4">
@@ -584,7 +584,7 @@ export default function UsersPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-slate-500">Failed to load user details</p>
+                <p className="text-muted-foreground">Failed to load user details</p>
               </div>
             )}
           </DialogContent>

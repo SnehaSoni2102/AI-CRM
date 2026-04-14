@@ -18,19 +18,19 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: 'var(--studio-primary)',
-          light: 'var(--studio-primary-light)',
-          dark: '#A01860',
-          foreground: '#FFFFFF',
+          DEFAULT: 'rgb(var(--studio-primary-rgb) / <alpha-value>)',
+          light: 'rgb(var(--studio-primary-light-rgb) / <alpha-value>)',
+          dark: 'var(--studio-primary-dark)',
+          foreground: 'rgb(var(--studio-on-primary-rgb) / <alpha-value>)',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        ring: 'rgb(var(--studio-primary-rgb) / <alpha-value>)',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: 'rgb(var(--studio-primary-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--studio-on-primary-rgb) / <alpha-value>)',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

@@ -37,15 +37,15 @@ export default function InterventionQueueDetails() {
         borderRadius: 20,
         padding: 20,
         gap: 16,
-        background: '#FFFFFF',
-        border: '2px solid #F1F5F9',
+        background: 'hsl(var(--card))',
+        border: '2px solid hsl(var(--border))',
         boxShadow: '4px 4px 26px 0px rgba(65, 65, 65, 0.06)',
       }}
     >
       {/* Title – slightly smaller than original */}
       <p
         className="uppercase font-bold tracking-wide text-xs"
-        style={{ fontFamily: 'Inter, sans-serif', lineHeight: 1.5, color: '#0F172A' }}
+        style={{ fontFamily: 'Inter, sans-serif', lineHeight: 1.5, color: 'hsl(var(--foreground))' }}
       >
         {SECTION_TITLE}
       </p>
@@ -63,7 +63,7 @@ export default function InterventionQueueDetails() {
                 padding: '8px 12px',
                 borderRadius: 4,
                 minWidth: 113,
-                background: isActive ? 'var(--studio-primary)' : '#FFFFFF',
+                background: isActive ? 'var(--studio-primary)' : 'hsl(var(--card))',
                 border: `1px solid ${isActive ? tab.border : tab.border}`,
                 color: isActive ? '#FFFFFF' : tab.inactiveText,
                 fontFamily: 'Inter, sans-serif',
@@ -93,8 +93,8 @@ export default function InterventionQueueDetails() {
               gap: 12,
               padding: '16px 12px',
               gap: 12,
-              background: '#FFFFFF',
-              border: '1.5px solid #F1F5F9',
+              background: 'hsl(var(--card))',
+              border: '1.5px solid hsl(var(--border))',
               borderRadius: 8,
               boxShadow: '0px 4px 10px 0px rgba(211, 218, 226, 0.24)',
             }}
@@ -119,25 +119,25 @@ export default function InterventionQueueDetails() {
             <div className="flex flex-col gap-2 flex-1 min-w-0 pt-4">
               <div className="flex flex-row items-center gap-2">
                 <div
-                  className="flex-shrink-0 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden"
+                  className="flex-shrink-0 rounded-full bg-muted flex items-center justify-center overflow-hidden"
                   style={{ width: 48, height: 48 }}
                 >
-                  <User className="w-6 h-6 text-slate-500" style={{ width: 24, height: 24 }} />
+                  <User className="w-6 h-6 text-muted-foreground" style={{ width: 24, height: 24 }} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 14, lineHeight: 1.5, color: '#0F172A' }}>
+                  <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 14, lineHeight: 1.5, color: 'hsl(var(--foreground))' }}>
                     {lead.name}
                   </span>
-                  <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13, lineHeight: 1.43, color: '#64748B' }}>
+                  <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13, lineHeight: 1.43, color: 'hsl(var(--muted-foreground))' }}>
                     {lead.location}
                   </span>
                 </div>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: '#0F172A' }}>
+                <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: 'hsl(var(--foreground))' }}>
                   {lead.email}
                 </span>
-                <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: '#64748B' }}>
+                <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: 'hsl(var(--muted-foreground))' }}>
                   {lead.phone}
                 </span>
               </div>
@@ -172,11 +172,11 @@ export default function InterventionQueueDetails() {
       <div className="flex flex-row items-center flex-wrap gap-1">
         <div className="flex flex-row items-center gap-1">
           <Lightbulb className="flex-shrink-0" style={{ width: 20, height: 20, color: 'var(--studio-primary)' }} />
-          <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13, lineHeight: 1.43, color: '#64748B' }}>
+          <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13, lineHeight: 1.43, color: 'hsl(var(--muted-foreground))' }}>
             {TIP_PREFIX}
           </span>
         </div>
-        <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: '#94A3B8' }}>
+        <span style={{ fontFamily: 'Inter', fontWeight: 400, fontSize: 13, lineHeight: 1.43, color: 'hsl(var(--muted-foreground))' }}>
           {TIP_TEXT}
         </span>
       </div>

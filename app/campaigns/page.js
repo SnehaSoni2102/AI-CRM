@@ -5,10 +5,10 @@ import MainLayout from '@/components/layout/MainLayout'
 import { Plus, Eye, Target, Rocket, Trash2 } from 'lucide-react'
 
 const stats = [
-    { id: 1, title: 'TOTAL SEQUENCES', value: '53', color: 'text-slate-900' },
-    { id: 2, title: 'ACTIVE', value: '0', color: 'text-green-500' },
-    { id: 3, title: 'TOTAL CONTACTS', value: '675', color: 'text-slate-900' },
-    { id: 4, title: 'AVG STEPS', value: '0', color: 'text-red-500' },
+    { id: 1, title: 'TOTAL SEQUENCES', value: '53', color: 'text-foreground' },
+    { id: 2, title: 'ACTIVE', value: '0', color: 'text-green-500 dark:text-green-400' },
+    { id: 3, title: 'TOTAL CONTACTS', value: '675', color: 'text-foreground' },
+    { id: 4, title: 'AVG STEPS', value: '0', color: 'text-red-500 dark:text-red-400' },
 ]
 
 const dummyCampaigns = Array.from({ length: 6 }).map((_, i) => ({
@@ -34,7 +34,7 @@ export default function CampaignsPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {stats.map((stat) => (
-                        <div key={stat.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col items-start gap-3">
+                        <div key={stat.id} className="bg-card rounded-2xl p-6 shadow-sm border border-border flex flex-col items-start gap-3">
                             <h3 className="text-xs font-bold text-brand tracking-wider uppercase">{stat.title}</h3>
                             <p className={`text-4xl font-bold ${stat.color}`}>{stat.value}</p>
                         </div>
@@ -44,33 +44,33 @@ export default function CampaignsPage() {
                 {/* Campaigns Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {dummyCampaigns.map((campaign) => (
-                        <div key={campaign.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col gap-4">
+                        <div key={campaign.id} className="bg-card rounded-2xl p-6 shadow-sm border border-border flex flex-col gap-4">
                             {/* Card Header */}
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex flex-col gap-1.5">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold text-slate-900 text-[15px] leading-snug truncate" title={campaign.title}>
+                                        <h3 className="font-semibold text-foreground text-[15px] leading-snug truncate" title={campaign.title}>
                                             {campaign.title}
                                         </h3>
-                                        <Eye className="w-4 h-4 text-slate-300 flex-shrink-0" />
+                                        <Eye className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                                     </div>
-                                    <p className="text-[13px] text-slate-400 font-normal">{campaign.description}</p>
+                                    <p className="text-[13px] text-muted-foreground font-normal">{campaign.description}</p>
                                 </div>
-                                <div className="bg-[#E0F2FE] text-[#0EA5E9] px-3 py-1 rounded-md text-[11px] font-semibold tracking-wide uppercase flex-shrink-0">
+                                <div className="bg-sky-500/15 text-sky-600 dark:text-sky-400 px-3 py-1 rounded-md text-[11px] font-semibold tracking-wide uppercase flex-shrink-0">
                                     {campaign.status}
                                 </div>
                             </div>
 
                             {/* Contacts info */}
-                            <div className="flex items-center gap-2 text-slate-600 mt-2">
-                                <Target className="w-4 h-4 text-slate-500" strokeWidth={2.5} />
-                                <span className="text-sm font-bold">{campaign.contacts} contacts</span>
+                            <div className="flex items-center gap-2 text-muted-foreground mt-2">
+                                <Target className="w-4 h-4 text-muted-foreground" strokeWidth={2.5} />
+                                <span className="text-sm font-bold text-foreground">{campaign.contacts} contacts</span>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-3 pt-3 mt-1 border-t border-transparent">
-                                <button className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors">
-                                    <Rocket className="w-4 h-4 text-slate-400" />
+                            <div className="flex items-center gap-3 pt-3 mt-1 border-t border-border">
+                                <button className="flex-1 flex items-center justify-center gap-2 bg-background border border-border text-muted-foreground hover:bg-muted/50 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors">
+                                    <Rocket className="w-4 h-4 text-muted-foreground" />
                                     Launch
                                 </button>
                                 <button className="flex-1 flex items-center justify-center gap-2 bg-[#EF4444] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm">

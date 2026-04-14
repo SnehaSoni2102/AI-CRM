@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -24,25 +24,25 @@ export default function ConversationView({
   }, [conversation?.id])
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-md">
+      <div className="flex-1 flex items-center justify-center bg-card rounded-2xl border border-border shadow-md">
         <div className="text-center">
-          <Mail className="h-16 w-16 mx-auto text-slate-300 mb-4" />
-          <h3 className="text-base font-semibold text-slate-900 mb-2">No Conversation Selected</h3>
-          <p className="text-sm text-slate-500">Select a conversation from the left to view messages</p>
+          <Mail className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-base font-semibold text-foreground mb-2">No Conversation Selected</h3>
+          <p className="text-sm text-muted-foreground">Select a conversation from the left to view messages</p>
         </div>
       </div>
     )
   }
 
   return (
-    <main className="flex-1 flex flex-col min-h-0 bg-white h-full border-l border-slate-200 overflow-hidden">
+    <main className="flex-1 flex flex-col min-h-0 bg-card h-full border-l border-border overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 bg-white flex-shrink-0">
+      <div className="p-4 border-b border-border bg-card flex-shrink-0">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {onBackClick && (
               <Button variant="ghost" size="icon" onClick={onBackClick} className="lg:hidden h-9 w-9">
-                <ArrowLeft className="h-4 w-4 text-slate-600" />
+                <ArrowLeft className="h-4 w-4 text-muted-foreground" />
               </Button>
             )}
             <div className="relative">
@@ -51,14 +51,14 @@ export default function ConversationView({
                   {getInitials(conversation.contact.name)}
                 </AvatarFallback>
               </Avatar>
-              <span className="absolute right-0 bottom-0 w-2.5 h-2.5 rounded-full ring-2 ring-white bg-[#00AA34]" />
+              <span className="absolute right-0 bottom-0 w-2.5 h-2.5 rounded-full ring-2 ring-card bg-emerald-500 dark:bg-emerald-400" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-sm font-semibold text-slate-900 truncate">{conversation.contact.name}</h4>
+              <h4 className="text-sm font-semibold text-foreground truncate">{conversation.contact.name}</h4>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#64748B]">{conversation.contact.type}</span>
-                <span className="text-xs text-[#94A3B8]">•</span>
-                <span className="text-xs text-[#94A3B8]">Today</span>
+                <span className="text-xs text-muted-foreground">{conversation.contact.type}</span>
+                <span className="text-xs text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">Today</span>
               </div>
             </div>
           </div>
@@ -82,8 +82,8 @@ export default function ConversationView({
               className={cn(
                 'px-3 py-1 rounded-md text-sm transition-colors',
                 activeTab === tab
-                  ? 'bg-[color:var(--studio-primary-light)] text-[color:var(--studio-primary)]'
-                  : 'text-[#64748B] hover:bg-slate-100'
+                  ? 'bg-[color:var(--studio-primary-light)] dark:bg-primary/15 text-[color:var(--studio-primary)]'
+                  : 'text-muted-foreground hover:bg-muted'
               )}
             >
               {tab}
@@ -93,12 +93,12 @@ export default function ConversationView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide py-3 px-4 bg-slate-50">
+      <div className="flex-1 overflow-y-auto scrollbar-hide py-3 px-4 bg-muted/40">
         {(() => {
           const tabChannelMap = { 'E-mail': 'Email', 'SMS': 'SMS', 'Call': 'Call' }
           const filtered = activeTab === 'All' ? messages : messages.filter((m) => m.channel === tabChannelMap[activeTab])
           if (filtered.length === 0) return (
-            <div className="text-center text-slate-500 text-sm py-8">
+            <div className="text-center text-muted-foreground text-sm py-8">
               {messages.length === 0 ? 'No messages yet. Start the conversation!' : `No ${activeTab} messages.`}
             </div>
           )
@@ -110,9 +110,9 @@ export default function ConversationView({
               <div key={message.id}>
                 {showDateDivider && (
                   <div className="flex items-center my-2">
-                    <div className="flex-1 h-px bg-[#E6EEF8]" />
-                    <div className="px-3 text-xs text-[#64748B]">{new Date(message.timestamp).toLocaleDateString()}</div>
-                    <div className="flex-1 h-px bg-[#E6EEF8]" />
+                    <div className="flex-1 h-px bg-border" />
+                    <div className="px-3 text-xs text-muted-foreground">{new Date(message.timestamp).toLocaleDateString()}</div>
+                    <div className="flex-1 h-px bg-border" />
                   </div>
                 )}
 
@@ -120,7 +120,7 @@ export default function ConversationView({
                   {isInbound && (
                     <div className="flex items-start gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-slate-200 text-slate-700 text-xs font-semibold">
+                        <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
                           {getInitials(message.sender)}
                         </AvatarFallback>
                       </Avatar>
@@ -131,7 +131,7 @@ export default function ConversationView({
                     <div
                       className={cn(
                         'px-4 py-3 rounded-xl break-words shadow-sm',
-                        isInbound ? 'bg-white border border-[#EDF2F7] text-slate-900' : 'bg-[color:var(--studio-primary)] text-white'
+                        isInbound ? 'bg-card border border-border text-foreground' : 'bg-[color:var(--studio-primary)] text-white'
                       )}
                     >
                       <div
@@ -155,7 +155,7 @@ export default function ConversationView({
                         </ReactMarkdown>
                       </div>
                     </div>
-                    <div className="mt-2 text-xs text-[#94A3B8]">{formatDateTime(message.timestamp)}</div>
+                    <div className="mt-2 text-xs text-muted-foreground">{formatDateTime(message.timestamp)}</div>
                   </div>
                   {!isInbound && (
                     <div className="ml-3">
@@ -174,7 +174,7 @@ export default function ConversationView({
       </div>
 
       {/* Message Input - no separating line, white input box */}
-      <div className="pt-1 pb-1 px-2 bg-slate-50">
+      <div className="pt-1 pb-1 px-2 bg-muted/40 border-t border-border">
         {activeTab === 'Call' ? (
           <p className="text-sm text-muted-foreground text-center py-4">Calls cannot be sent from the inbox.</p>
         ) : (

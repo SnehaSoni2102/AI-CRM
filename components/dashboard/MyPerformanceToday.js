@@ -33,7 +33,7 @@ const defaultMetrics = [
 function Card({ children, className }) {
   return (
     <div
-      className={cn('bg-white border border-slate-100 shadow-sm overflow-hidden', className)}
+      className={cn('bg-card border border-border text-card-foreground shadow-sm overflow-hidden', className)}
       style={{ borderRadius: 20 }}
     >
       {children}
@@ -56,14 +56,14 @@ export default function MyPerformanceToday({ metrics = defaultMetrics }) {
           <Card key={m.id} className="p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-xl sm:text-2xl font-bold text-slate-900">
+                <p className="text-xl sm:text-2xl font-bold text-foreground">
                   {m.value}
                   {m.icon === 'star' && (
                     <Star className="inline-block w-6 h-6 text-amber-400 fill-amber-400 ml-1 align-middle" />
                   )}
                 </p>
-                <p className="text-sm text-slate-500 mt-1">
-                  {m.improvement && <TrendingDown className="inline w-4 h-4 mr-1 text-emerald-600 align-middle" />}
+                <p className="text-sm text-muted-foreground mt-1">
+                  {m.improvement && <TrendingDown className="inline w-4 h-4 mr-1 text-emerald-600 dark:text-emerald-400 align-middle" />}
                   {m.sub}
                 </p>
               </div>

@@ -49,7 +49,7 @@ function TaskRow({ item, showButton = true }) {
             fontWeight: 500,
             fontSize: 10,
             lineHeight: 1.6,
-            color: '#0F172A',
+            color: 'hsl(var(--foreground))',
           }}
         >
           {item.title}
@@ -60,7 +60,7 @@ function TaskRow({ item, showButton = true }) {
             fontWeight: 400,
             fontSize: 10,
             lineHeight: 1.6,
-            color: '#64748B',
+            color: 'hsl(var(--muted-foreground))',
           }}
         >
           {item.description}
@@ -69,17 +69,17 @@ function TaskRow({ item, showButton = true }) {
       {showButton && item.action && (
         <button
           type="button"
-          className="flex-shrink-0 rounded transition-colors hover:bg-slate-50"
+          className="flex-shrink-0 rounded transition-colors hover:bg-muted"
           style={{
             padding: '6px 12px',
-            border: '1px solid #F1F5F9',
+            border: '1px solid hsl(var(--border))',
             borderRadius: 4,
-            boxShadow: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
+            boxShadow: '0px 1px 2px 0px hsl(var(--foreground) / 0.05)',
             fontFamily: 'Inter, sans-serif',
             fontWeight: 400,
             fontSize: 10,
             lineHeight: 1.6,
-            color: '#94A3B8',
+            color: 'hsl(var(--muted-foreground))',
           }}
         >
           {item.action}
@@ -98,7 +98,7 @@ function TodoSection({ title, count, items, completed }) {
           fontWeight: 500,
           fontSize: 14,
           lineHeight: 1.43,
-          color: completed ? '#00AA34' : '#64748B',
+          color: completed ? '#00AA34' : 'hsl(var(--muted-foreground))',
         }}
       >
         {title} ({count})
@@ -127,9 +127,9 @@ export default function MyToDoList() {
         style={{
           padding: 24,
           gap: 16,
-          background: '#FFFFFF',
-          border: '2px solid #F1F5F9',
-          boxShadow: '4px 4px 26px 0px rgba(65, 65, 65, 0.06)',
+          background: 'hsl(var(--card))',
+          border: '2px solid hsl(var(--border))',
+          boxShadow: '4px 4px 26px 0px hsl(var(--foreground) / 0.06)',
         }}
       >
         {/* Title + divider – Figma: Frame 1000005738, gap 8 */}
@@ -140,7 +140,7 @@ export default function MyToDoList() {
               fontWeight: 700,
               fontSize: 18,
               lineHeight: 1.44,
-              color: '#0F172A',
+              color: 'hsl(var(--foreground))',
             }}
           >
             {SECTION_TITLE}

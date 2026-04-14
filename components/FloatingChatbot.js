@@ -70,7 +70,7 @@ export default function FloatingChatbot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-brand text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 z-50 flex items-center justify-center ring-4 ring-white/20"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-brand text-brand-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105 z-50 flex items-center justify-center ring-4 ring-background/40"
       >
         <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
       </button>
@@ -80,7 +80,7 @@ export default function FloatingChatbot() {
   return (
     <div
       className={cn(
-        'fixed z-50 bg-white border border-slate-200 shadow-2xl rounded-2xl transition-all animate-scale-in',
+        'fixed z-50 bg-card text-card-foreground border border-border shadow-2xl rounded-2xl transition-all animate-scale-in',
         // Mobile: Full screen on small devices
         'inset-4 sm:inset-auto sm:bottom-6 sm:right-6',
         // Desktop: Fixed size
@@ -90,9 +90,9 @@ export default function FloatingChatbot() {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200 bg-brand text-white rounded-t-2xl">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border bg-brand text-brand-foreground rounded-t-2xl">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-brand-foreground/20 flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </div>
           <div>
@@ -107,7 +107,7 @@ export default function FloatingChatbot() {
           <Button
             variant="ghost"
             size="icon"
-            className="hidden sm:flex h-8 w-8 text-white hover:bg-white/20"
+            className="hidden sm:flex h-8 w-8 text-brand-foreground hover:bg-brand-foreground/20"
             onClick={() => setIsMinimized(!isMinimized)}
           >
             <Minimize2 className="h-4 w-4" />
@@ -115,7 +115,7 @@ export default function FloatingChatbot() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20"
+            className="h-7 w-7 sm:h-8 sm:w-8 text-brand-foreground hover:bg-brand-foreground/20"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -147,8 +147,8 @@ export default function FloatingChatbot() {
                       className={cn(
                         'max-w-[80%] rounded-xl px-3 py-2 shadow-sm',
                         msg.sender === 'user'
-                          ? 'bg-brand text-white'
-                          : 'bg-slate-100 text-slate-900 border border-slate-200'
+                          ? 'bg-brand text-brand-foreground'
+                          : 'bg-muted text-foreground border border-border'
                       )}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>
@@ -166,7 +166,7 @@ export default function FloatingChatbot() {
                     <button
                       key={action}
                       onClick={() => handleQuickAction(action)}
-                      className="px-2.5 sm:px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full transition-colors font-medium"
+                      className="px-2.5 sm:px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-full transition-colors font-medium"
                     >
                       {action}
                     </button>
@@ -182,7 +182,7 @@ export default function FloatingChatbot() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className="min-h-[40px] max-h-[100px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-brand text-sm"
+                  className="min-h-[40px] max-h-[100px] resize-none rounded-lg border-input bg-background focus:bg-background focus:border-ring text-sm"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
@@ -207,14 +207,14 @@ export default function FloatingChatbot() {
               {recentChats.map((chat) => (
                 <div
                   key={chat.id}
-                  className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-1">
-                    <p className="font-medium text-sm text-slate-900">{chat.title}</p>
-                    <Clock className="h-3 w-3 text-slate-400 shrink-0 mt-0.5" />
+                    <p className="font-medium text-sm text-foreground">{chat.title}</p>
+                    <Clock className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
                   </div>
-                  <p className="text-xs text-slate-600 mb-2">{chat.preview}</p>
-                  <p className="text-xs text-slate-400">{chat.time}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{chat.preview}</p>
+                  <p className="text-xs text-muted-foreground">{chat.time}</p>
                 </div>
               ))}
           </TabsContent>
@@ -238,13 +238,13 @@ export default function FloatingChatbot() {
                 {helpTopics.map((topic) => (
                   <div
                     key={topic.title}
-                    className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-start gap-2">
                       <span className="text-lg">{topic.icon}</span>
                       <div>
-                        <p className="font-medium text-sm text-slate-900">{topic.title}</p>
-                        <p className="text-xs text-slate-500">{topic.description}</p>
+                        <p className="font-medium text-sm text-foreground">{topic.title}</p>
+                        <p className="text-xs text-muted-foreground">{topic.description}</p>
                       </div>
                     </div>
                   </div>

@@ -5,7 +5,17 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Color system
+   * ────────────
+   * 1. UI shell — HSL triplets for shadcn-style tokens (background, border, …).
+   * 2. Brand — Dance Studio palette in :root; RGB triplets match primary/light for Tailwind opacity.
+   * 3. Gradients / chart stops are explicit hex (sidebar, bar, side, hero gradient).
+   * 4. Dark mode — `html.dark` (toggle + `localStorage.theme` / system). See `.dark { }` for zinc base + pink/cyan brand.
+   * 5. Alternate light themes — `.theme-dancestudio` mirrors :root; copy that pattern for other tenants.
+   */
   :root {
+    /* ── UI shell (shadcn / HSL components) ── */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -26,40 +36,78 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 330 74% 45%;
     --radius: 0.5rem;
-    /* Studio CRM brand colors (used across the app) */
-    --studio-primary: #C81D77;
-    --studio-primary-light: #FCE7F3;
-    --studio-gradient: #CE32E0;
-    --studio-gradient-css: linear-gradient(90deg, #C81D77 0%, #CE32E0 100%);
-    --sidebar-gradient-css: linear-gradient(180deg, #F72585 0%, #4CC9F0 100%);
-    --bar-gradient-css: linear-gradient(180deg, #6E1041 0%, #F72585 100%);
-    --side-gradient-css: linear-gradient(180deg, #ADE6F8 0%, #45B7DA 100%);
-    --bar-gradient-start: #6E1041;
-    --bar-gradient-end: #F72585;
-    --side-gradient-start: #ADE6F8;
-    --side-gradient-end: #45B7DA;
+
+    /* ── Brand palette — Dance Studio CRM (edit RGB triplets + hex together when re-theming) ── */
+    --studio-primary-rgb: 200 29 119;
+    --studio-primary-light-rgb: 252 231 243;
+    --studio-on-primary-rgb: 255 255 255;
+    --studio-primary: rgb(var(--studio-primary-rgb));
+    --studio-primary-light: rgb(var(--studio-primary-light-rgb));
+    --studio-primary-dark: color-mix(in srgb, var(--studio-primary), #000 28%);
+    --studio-gradient: #ce32e0;
+    --studio-gradient-css: linear-gradient(90deg, #c81d77 0%, #ce32e0 100%);
+    --sidebar-gradient-css: linear-gradient(180deg, #f72585 0%, #4cc9f0 100%);
+    --bar-gradient-css: linear-gradient(180deg, #6e1041 0%, #f72585 100%);
+    --side-gradient-css: linear-gradient(180deg, #ade6f8 0%, #45b7da 100%);
+    --bar-gradient-start: #6e1041;
+    --bar-gradient-end: #f72585;
+    --side-gradient-start: #ade6f8;
+    --side-gradient-end: #45b7da;
+    --calendar-palette-1: var(--studio-primary);
+    --calendar-palette-2: var(--studio-gradient);
+    --calendar-palette-3: var(--side-gradient-end);
+    --calendar-palette-4: var(--side-gradient-start);
+    --calendar-palette-5: var(--bar-gradient-end);
   }
 
+  /* Dark mode — deep zinc base, pink primary, cyan accent (dashboard reference) */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    color-scheme: dark;
+    --background: 222 28% 8%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 7%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 330 81% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 190 90% 48%;
+    --accent-foreground: 240 10% 6%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 330 81% 60%;
+
+    /* Brand tokens (Tailwind primary/brand use --studio-*-rgb) */
+    --studio-primary-rgb: 236 72 153;
+    --studio-primary-light-rgb: 48 32 44;
+    --studio-on-primary-rgb: 255 255 255;
+    --studio-primary: rgb(var(--studio-primary-rgb));
+    --studio-primary-light: rgb(var(--studio-primary-light-rgb));
+    --studio-primary-dark: color-mix(in srgb, rgb(var(--studio-primary-rgb)), #000 25%);
+    --studio-gradient: #e879f9;
+    --studio-gradient-css: linear-gradient(90deg, #ec4899 0%, #e879f9 100%);
+    --sidebar-gradient-css: linear-gradient(
+      180deg,
+      hsl(var(--card)) 0%,
+      hsl(var(--background)) 100%
+    );
+    --bar-gradient-css: linear-gradient(180deg, #831843 0%, #f472b6 100%);
+    --side-gradient-css: linear-gradient(180deg, #67e8f9 0%, #0ea5e9 100%);
+    --bar-gradient-start: #831843;
+    --bar-gradient-end: #f472b6;
+    --side-gradient-start: #67e8f9;
+    --side-gradient-end: #0ea5e9;
+    --calendar-palette-1: var(--studio-primary);
+    --calendar-palette-2: var(--studio-gradient);
+    --calendar-palette-3: var(--side-gradient-end);
+    --calendar-palette-4: var(--side-gradient-start);
+    --calendar-palette-5: var(--bar-gradient-end);
   }
 }
 
@@ -75,7 +123,7 @@
 
 @layer components {
   .btn-gradient {
-    @apply bg-brand text-white hover:bg-brand-dark transition-all;
+    @apply bg-brand text-brand-foreground hover:bg-brand-dark transition-all;
   }
 
   .scrollbar-hide {
@@ -114,6 +162,18 @@
   .badge-error {
     @apply bg-red-100 text-red-800 border-red-200;
   }
+
+  .dark .badge-success {
+    @apply bg-emerald-950/60 text-emerald-300 border-emerald-800;
+  }
+
+  .dark .badge-warning {
+    @apply bg-amber-950/60 text-amber-300 border-amber-800;
+  }
+
+  .dark .badge-error {
+    @apply bg-red-950/60 text-red-300 border-red-900;
+  }
 }
 
 /* FullCalendar overrides */
@@ -126,20 +186,20 @@
 }
 
 .calendar-shell .fc .fc-timegrid-now-indicator-line {
-  border-color: #16A34A;
+  border-color: var(--studio-primary);
 }
 
 .calendar-shell .fc .fc-timegrid-now-indicator-arrow {
-  border-top-color: #16A34A;
-  border-bottom-color: #16A34A;
+  border-top-color: var(--studio-primary);
+  border-bottom-color: var(--studio-primary);
 }
 
 .calendar-shell .fc .fc-day-today {
-  background: rgba(22, 163, 74, 0.08) !important;
+  background: color-mix(in srgb, var(--studio-primary) 12%, transparent) !important;
 }
 
 .calendar-shell .fc .fc-more-link {
-  color: #0F172A;
+  color: hsl(var(--foreground));
   font-weight: 600;
 }
 
@@ -167,26 +227,31 @@
 }
 
 
-/* Theme utilities and easy global overrides
-   - Update the `:root` variables above to change default theme across the app.
-   - Or add a `.theme-<name>` class (example: `.theme-dancestudio`) and toggle it on <html> or <body>.
-   - Utility classes below map to those variables so you can use `bg-dancestudio`, `text-dancestudio`, etc.
-*/
+/* Optional named utilities for brand (map to variables in :root) */
 
 @layer utilities {
-  /* Theme toggle example (apply to <html> or <body>) */
+  /* Optional: add class on <html> to scope the same tokens for multi-tenant themes */
   .theme-dancestudio {
-    --studio-primary: #C81D77;
-    --studio-primary-light: #FCE7F3;
-    --studio-gradient: #CE32E0;
-    --studio-gradient-css: linear-gradient(90deg, #C81D77 0%, #CE32E0 100%);
-    --sidebar-gradient-css: linear-gradient(180deg, #F72585 0%, #4CC9F0 100%);
-    --bar-gradient-css: linear-gradient(180deg, #6E1041 0%, #F72585 100%);
-    --side-gradient-css: linear-gradient(180deg, #ADE6F8 0%, #45B7DA 100%);
-    --bar-gradient-start: #6E1041;
-    --bar-gradient-end: #F72585;
-    --side-gradient-start: #ADE6F8;
-    --side-gradient-end: #45B7DA;
+    --studio-primary-rgb: 200 29 119;
+    --studio-primary-light-rgb: 252 231 243;
+    --studio-on-primary-rgb: 255 255 255;
+    --studio-primary: rgb(var(--studio-primary-rgb));
+    --studio-primary-light: rgb(var(--studio-primary-light-rgb));
+    --studio-primary-dark: color-mix(in srgb, var(--studio-primary), #000 28%);
+    --studio-gradient: #ce32e0;
+    --studio-gradient-css: linear-gradient(90deg, #c81d77 0%, #ce32e0 100%);
+    --sidebar-gradient-css: linear-gradient(180deg, #f72585 0%, #4cc9f0 100%);
+    --bar-gradient-css: linear-gradient(180deg, #6e1041 0%, #f72585 100%);
+    --side-gradient-css: linear-gradient(180deg, #ade6f8 0%, #45b7da 100%);
+    --bar-gradient-start: #6e1041;
+    --bar-gradient-end: #f72585;
+    --side-gradient-start: #ade6f8;
+    --side-gradient-end: #45b7da;
+    --calendar-palette-1: var(--studio-primary);
+    --calendar-palette-2: var(--studio-gradient);
+    --calendar-palette-3: var(--side-gradient-end);
+    --calendar-palette-4: var(--side-gradient-start);
+    --calendar-palette-5: var(--bar-gradient-end);
   }
 
   /* Background utilities */

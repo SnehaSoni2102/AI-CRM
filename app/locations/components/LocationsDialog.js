@@ -152,10 +152,10 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
           <div className="space-y-6 mt-6">
             {/* Basic Information Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Basic Information</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Location Name *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Location Name *</label>
                   <Input 
                     value={editingLocation.name || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, name: e.target.value }))} 
@@ -164,7 +164,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Email *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email *</label>
                   <Input 
                     value={editingLocation.email || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, email: e.target.value }))} 
@@ -175,7 +175,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Street Address *</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Street Address *</label>
                 <Input 
                   value={editingLocation.address || ''} 
                   onChange={(e) => setEditingLocation((p) => ({ ...p, address: e.target.value }))} 
@@ -187,10 +187,10 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
 
             {/* Address Details Section */}
             <div className="space-y-4 pt-4 border-t border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Address Details</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Address Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">City</label>
                   <Input 
                     value={editingLocation.city || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, city: e.target.value }))} 
@@ -198,7 +198,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">State</label>
                   <Input 
                     value={editingLocation.state || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, state: e.target.value }))} 
@@ -206,7 +206,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Country</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Country</label>
                   <Input 
                     value={editingLocation.country || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, country: e.target.value }))} 
@@ -218,10 +218,10 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
 
             {/* Contact & Status Section */}
             <div className="space-y-4 pt-4 border-t border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Contact & Status</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Contact & Status</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Phone Number</label>
                   <Input 
                     value={editingLocation.phoneNumber || ''} 
                     onChange={(e) => setEditingLocation((p) => ({ ...p, phoneNumber: e.target.value }))} 
@@ -229,7 +229,7 @@ export default function LocationsDialog({ open, onClose, locations = [], onRefre
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Status</label>
                   <StatusSelector
                     value={editingLocation.status || 'active'}
                     onChange={(status) => setEditingLocation((p) => ({ ...p, status }))}

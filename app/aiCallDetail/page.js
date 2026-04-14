@@ -141,15 +141,15 @@ export default function AiCallDetailPage() {
             <div className="mb-6">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-semibold text-[#050312] tracking-tight">
+                  <h1 className="text-2xl font-semibold text-foreground tracking-tight">
                     AI Call Details
                   </h1>
-                  <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-[#9224EF] bg-white border border-[#E2E8F0]">
+                  <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-[#9224EF] bg-card border border-border">
                     {totalCount} calls
                   </span>
                 </div>
               </div>
-              <p className="text-sm font-normal text-[#64748B]">
+              <p className="text-sm font-normal text-muted-foreground">
                 View AI calling activity, search by call ID, number, status or summary, and remove
                 outdated records.
               </p>
@@ -157,7 +157,7 @@ export default function AiCallDetailPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div className="relative w-[260px] shrink-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search calls"
                   value={searchQuery}
@@ -165,7 +165,7 @@ export default function AiCallDetailPage() {
                     setCurrentPage(1)
                     setSearchQuery(e.target.value)
                   }}
-                  className="pl-9 h-9 rounded-lg border-[#E2E8F0] bg-white text-sm placeholder:text-[#94A3B8]"
+                  className="pl-9 h-9 rounded-lg border-border bg-background text-sm placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -173,7 +173,7 @@ export default function AiCallDetailPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-9 px-3 rounded-lg border-[#E2E8F0] bg-white text-xs font-medium text-[#334155] hover:bg-slate-50"
+                  className="h-9 px-3 rounded-lg border-border bg-background text-xs font-medium text-foreground hover:bg-muted/50"
                   onClick={toggleSelectAllOnPage}
                   disabled={!calls.length}
                 >
@@ -193,7 +193,7 @@ export default function AiCallDetailPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-9 px-4 rounded-lg border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:bg-slate-50"
+                  className="h-9 px-4 rounded-lg border-border bg-background text-sm font-medium text-foreground hover:bg-muted/50"
                   onClick={() => loadCalls(currentPage, searchQuery)}
                   disabled={loading}
                 >
@@ -202,7 +202,7 @@ export default function AiCallDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#E2E8F0] bg-white overflow-hidden">
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
               {loading && (
                 <div className="flex items-center justify-center py-16">
                   <LoadingSpinner size="lg" text="Loading AI call details…" />
@@ -211,11 +211,11 @@ export default function AiCallDetailPage() {
 
               {!loading && calls.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="h-12 w-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-                    <PhoneCall className="h-6 w-6 text-[#64748B]" />
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <PhoneCall className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-sm font-medium text-[#0F172A]">No AI call records found</p>
-                  <p className="text-xs text-[#64748B] mt-1 max-w-sm">
+                  <p className="text-sm font-medium text-foreground">No AI call records found</p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-sm">
                     Once AI calls are made, they will appear here with status, number, and a quick
                     summary.
                   </p>
@@ -249,7 +249,7 @@ export default function AiCallDetailPage() {
                     <Card
                       key={call._id}
                       className={`group cursor-pointer border-2 ${
-                        isSelected ? 'border-[#9224EF] shadow-lg' : 'border-[#E2E8F0]'
+                        isSelected ? 'border-[#9224EF] shadow-lg' : 'border-border'
                       } hover:border-[#9224EF]/60 hover:shadow-lg transition-all duration-200`}
                       onClick={() => handleOpenDetails(call)}
                     >
@@ -264,14 +264,14 @@ export default function AiCallDetailPage() {
                             className="mt-1 rounded border-[#CBD5E1] data-[state=checked]:bg-[#9224EF] data-[state=checked]:border-[#9224EF]"
                             aria-label="Select call"
                           />
-                          <div className="h-10 w-10 rounded-xl bg-[#F1F5F9] flex items-center justify-center text-[#0F172A]">
-                            <PhoneCall className="h-5 w-5 text-[#6366F1]" />
+                          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-foreground">
+                            <PhoneCall className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                           </div>
                           <div>
                             <CardTitle className="text-base">
                               {call.callId || 'Unknown Call'}
                             </CardTitle>
-                            <CardDescription className="text-[11px] text-[#64748B]">
+                            <CardDescription className="text-[11px] text-muted-foreground">
                               {createdLabel}
                             </CardDescription>
                           </div>
@@ -284,26 +284,26 @@ export default function AiCallDetailPage() {
                         </Badge>
                       </CardHeader>
                       <CardContent className="pt-0 pb-4 space-y-3">
-                        <div className="flex items-center justify-between text-xs text-[#64748B]">
-                          <span className="font-medium text-[#0F172A]">Number</span>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">Number</span>
                           <span className="ml-2">
                             {call.customer?.number || call.customer?.phone || '—'}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-[#64748B]">
-                          <span className="font-medium text-[#0F172A]">Duration</span>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <span className="font-medium text-foreground">Duration</span>
                           <span className="ml-2">{durationLabel}</span>
                         </div>
-                        <div className="text-xs text-[#64748B]">
-                          <span className="font-medium text-[#0F172A]">Summary</span>
+                        <div className="text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">Summary</span>
                           <p className="mt-1 line-clamp-2">
                             {call.analysis?.summary || 'No summary available'}
                           </p>
                         </div>
-                        <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 mt-1">
+                        <div className="flex justify-between items-center pt-2 border-t border-dashed border-border mt-1">
                           <button
                             type="button"
-                            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6366F1] hover:text-[#4F46E5]"
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                           >
                             <Info className="h-3.5 w-3.5" />
                             View details
@@ -333,23 +333,23 @@ export default function AiCallDetailPage() {
                 })}
               </div>
 
-              <div className="flex items-center justify-between px-4 py-3 border-t border-[#E2E8F0]">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || loading}
-                  className="inline-flex items-center h-8 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
-                <span className="text-sm text-[#64748B]">
+                <span className="text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || loading}
-                  className="inline-flex items-center h-8 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center h-8 px-3 rounded-lg border border-border bg-background text-sm font-medium text-foreground hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -367,7 +367,7 @@ export default function AiCallDetailPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className="text-xs text-[#6366F1] hover:text-[#4F46E5] underline-offset-2 hover:underline"
+                    className="text-xs text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 underline-offset-2 hover:underline"
                     onClick={handleBackToList}
                   >
                     ← Back to all calls
@@ -379,7 +379,7 @@ export default function AiCallDetailPage() {
                     {selectedCall.status || 'Unknown'}
                   </Badge>
                 </div>
-                <span className="text-[11px] text-[#94A3B8]">
+                <span className="text-[11px] text-muted-foreground">
                   Created{' '}
                   {selectedCall.createdAt
                     ? new Date(selectedCall.createdAt).toLocaleString()
@@ -387,33 +387,33 @@ export default function AiCallDetailPage() {
                 </span>
               </div>
 
-              <Card className="border-[#E2E8F0]">
+              <Card className="border-border">
                 <CardHeader className="pb-3 flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-[#EEF2FF] flex items-center justify-center">
-                        <PhoneCall className="h-5 w-5 text-[#4F46E5]" />
+                      <div className="h-11 w-11 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                        <PhoneCall className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                       </div>
                       <div>
-                        <CardTitle className="text-base text-[#0F172A]">
+                        <CardTitle className="text-base text-foreground">
                           {selectedCall.callId || 'Unknown Call'}
                         </CardTitle>
-                        <CardDescription className="text-xs text-[#64748B]">
+                        <CardDescription className="text-xs text-muted-foreground">
                           {selectedCall.customer?.number || 'Unknown number'} ·{' '}
                           {selectedCall.type || 'outboundPhoneCall'}
                         </CardDescription>
                       </div>
                     </div>
                     <div className="text-right space-y-1">
-                      <p className="text-xs text-[#64748B]">
+                      <p className="text-xs text-muted-foreground">
                         Cost:{' '}
-                        <span className="font-semibold text-[#0F172A]">
+                        <span className="font-semibold text-foreground">
                           {typeof selectedCall.cost === 'number'
                             ? `$${selectedCall.cost.toFixed(4)}`
                             : '—'}
                         </span>
                       </p>
-                      <p className="text-[11px] text-[#94A3B8]">
+                      <p className="text-[11px] text-muted-foreground">
                         Assistant ID: {selectedCall.assistantId || '—'}
                       </p>
                     </div>
@@ -423,84 +423,84 @@ export default function AiCallDetailPage() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Customer Number
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.customer?.number ||
                           selectedCall.customer?.phone ||
                           '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Phone Number Used
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.phoneNumberId || '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Transport Provider
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.transport?.provider || '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Call SID
                       </p>
-                      <p className="font-medium text-[#0F172A] break-all">
+                      <p className="font-medium text-foreground break-all">
                         {selectedCall.transport?.callSid || '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Started At
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.startedAt
                           ? new Date(selectedCall.startedAt).toLocaleString()
                           : '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Ended At
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.endedAt
                           ? new Date(selectedCall.endedAt).toLocaleString()
                           : '—'}
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Ended Reason
                       </p>
-                      <p className="font-medium text-[#0F172A]">
+                      <p className="font-medium text-foreground">
                         {selectedCall.endedReason || '—'}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
                       Summary
                     </p>
-                    <p className="text-sm text-[#0F172A] bg-[#F8FAFC] rounded-lg p-3">
+                    <p className="text-sm text-foreground bg-muted/50 rounded-lg p-3">
                       {selectedCall.analysis?.summary || selectedCall.summary || 'No summary available'}
                     </p>
                   </div>
 
                   {selectedCall.analysis?.successEvaluation && (
                     <div className="space-y-3">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Success Evaluation
                       </p>
-                      <p className="text-sm text-[#0F172A] bg-[#F1F5F9] rounded-lg p-3">
+                      <p className="text-sm text-foreground bg-muted/50 rounded-lg p-3">
                         {selectedCall.analysis.successEvaluation}
                       </p>
                     </div>
@@ -511,7 +511,7 @@ export default function AiCallDetailPage() {
                     selectedCall.artifact?.stereoRecordingUrl ||
                     selectedCall.stereoRecordingUrl) && (
                     <div className="space-y-3">
-                      <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
                         Recording
                       </p>
                       <div className="space-y-2">
@@ -525,7 +525,7 @@ export default function AiCallDetailPage() {
                             }
                           />
                         ) : null}
-                        <div className="flex flex-wrap gap-3 text-xs text-[#6366F1]">
+                        <div className="flex flex-wrap gap-3 text-xs text-indigo-600 dark:text-indigo-400">
                           {selectedCall.artifact?.recordingUrl && (
                             <a
                               href={selectedCall.artifact.recordingUrl}
@@ -564,18 +564,18 @@ export default function AiCallDetailPage() {
                   {Array.isArray(selectedCall.artifact?.messages) &&
                     selectedCall.artifact.messages.length > 0 && (
                       <div className="space-y-3">
-                        <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
                           Script (system prompt)
                         </p>
-                        <div className="text-[11px] text-[#0F172A] bg-[#F9FAFB] rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                        <div className="text-[11px] text-foreground bg-muted/50 rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
                           {selectedCall.artifact.messages.find((m) => m.role === 'system')?.message ||
                             'Script not available'}
                         </div>
 
-                        <p className="text-xs uppercase tracking-wide text-[#94A3B8]">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
                           Turn-by-turn messages
                         </p>
-                        <div className="max-h-[360px] overflow-y-auto border border-dashed border-[#E2E8F0] rounded-lg p-3 bg-[#F8FAFC] space-y-2">
+                        <div className="max-h-[360px] overflow-y-auto border border-dashed border-border rounded-lg p-3 bg-muted/30 space-y-2">
                           {selectedCall.artifact.messages
                             .filter((msg) => msg.role !== 'system')
                             .map((msg, idx) => {
@@ -598,13 +598,13 @@ export default function AiCallDetailPage() {
                                 <div
                                   className={`max-w-[80%] rounded-2xl px-3 py-2 text-[11px] leading-relaxed shadow-sm ${
                                     isSystem
-                                      ? 'bg-[#E2E8F0] text-[#0F172A]'
+                                      ? 'bg-muted text-foreground'
                                       : isAI
-                                      ? 'bg-[#EEF2FF] text-[#111827]'
-                                      : 'bg-white text-[#111827] border border-[#E2E8F0]'
+                                      ? 'bg-indigo-500/10 text-foreground'
+                                      : 'bg-card text-foreground border border-border'
                                   } ${isUser ? 'rounded-br-sm' : isAI ? 'rounded-bl-sm' : ''}`}
                                 >
-                                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8]">
+                                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                                     {isSystem ? 'System' : isAI ? 'AI (Illias)' : 'Caller'}
                                   </p>
                                   <p className="whitespace-pre-wrap">{msg.message}</p>

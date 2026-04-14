@@ -188,7 +188,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
   const studioName = user.branchName || 'Dance Studio'
   const sidebarTileClass =
-    'flex flex-col justify-center items-center gap-1 rounded-lg text-white w-[104px] min-h-[64px] px-2 py-2'
+    'flex flex-col justify-center items-center gap-1 rounded-lg text-white w-[104px] min-h-[64px] px-2 py-2 transition-colors'
   const sidebarLabelClass = 'text-center whitespace-nowrap leading-tight w-full overflow-visible'
 
   return (
@@ -216,7 +216,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         {/* Welcome section */}
         <div className="flex flex-col items-center gap-5 w-[112px]">
           <div className="flex flex-col justify-center items-center gap-1">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-[#6710C2]" aria-hidden>
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-[color:var(--studio-primary)]" aria-hidden>
               <Image
                 src="/figma/sidebar/images/logo.png"
                 alt=""
@@ -286,8 +286,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                       }}
                       className={cn(
                         sidebarTileClass,
-                        'hover:bg-white/20',
-                        isActive && 'bg-white/20'
+                        'hover:bg-black/15 dark:hover:bg-white/10',
+                        isActive && 'bg-black/20 dark:bg-white/15'
                       )}
                       aria-expanded={openMenu === item.name}
                       aria-haspopup="menu"
@@ -316,8 +316,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                       }}
                       className={cn(
                         sidebarTileClass,
-                        'hover:bg-white/20',
-                        isActive && 'bg-white/20'
+                        'hover:bg-black/15 dark:hover:bg-white/10',
+                        isActive && 'bg-black/20 dark:bg-white/15'
                       )}
                       aria-current={isActive ? 'page' : undefined}
                     >
@@ -339,7 +339,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         </div>
 
         {/* Subscription section */}
-        <div className="relative group flex flex-col items-center gap-1 p-1 rounded-lg bg-white/20 w-[112px]">
+        <div className="relative group flex flex-col items-center gap-1 p-1 rounded-lg border border-white/20 bg-black/15 dark:bg-white/10 w-[112px]">
           <div className="w-[62px] h-[46.5px] overflow-hidden rounded">
             <Image
               src="/figma/sidebar/upcoming-memoji.png"
@@ -350,15 +350,15 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               unoptimized
             />
           </div>
-          <div className="text-[#F72585] font-bold text-[10px] leading-[16px]">Upcoming Tasks</div>
+          <div className="text-white font-bold text-[10px] leading-[16px] drop-shadow-sm">Upcoming Tasks</div>
 
-          <div className="pointer-events-none absolute left-[118px] bottom-0 w-[260px] rounded-xl border border-slate-200 bg-white p-3 opacity-0 shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 z-50">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Upcoming Tasks</div>
+          <div className="pointer-events-none absolute left-[118px] bottom-0 w-[260px] rounded-xl border border-border bg-popover text-popover-foreground p-3 opacity-0 shadow-lg transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 z-50">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Upcoming Tasks</div>
             <div className="space-y-2">
               {sidebarUpcomingTasks.map((task) => (
-                <div key={task.id} className="rounded-lg border border-slate-100 px-2.5 py-2">
-                  <div className="text-xs font-medium text-slate-900 leading-4">{task.title}</div>
-                  <div className="mt-1 text-[11px] text-slate-500">
+                <div key={task.id} className="rounded-lg border border-border px-2.5 py-2">
+                  <div className="text-xs font-medium text-foreground leading-4">{task.title}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
                     Due {taskDateFormatter.format(new Date(task.dueDate))} - {task.assignee}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         return (
           <div
             ref={dropdownRef}
-            className="fixed w-[210px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.10)] py-3 z-[9999] border border-slate-100"
+            className="fixed w-[210px] bg-popover text-popover-foreground rounded-xl shadow-lg py-3 z-[9999] border border-border"
             style={{ top, left }}
             role="menu"
             onMouseEnter={() => {
@@ -391,10 +391,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               scheduleClose()
             }}
           >
-            <div className="px-5 mb-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <div className="px-5 mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               {item.name}
             </div>
-            <div className="h-px bg-slate-100 mb-2 mx-2" />
+            <div className="h-px bg-border mb-2 mx-2" />
             <div className="flex flex-col">
               {item.children
                 .filter((child) => (child.href ? canAccessRoute(child.href) : true))
@@ -413,8 +413,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                       className={cn(
                         'px-5 py-2.5 text-sm transition-colors block w-full text-left',
                         isChildActive
-                          ? 'text-[#F72585] bg-pink-50/60'
-                          : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-foreground hover:bg-muted hover:text-foreground'
                       )}
                       role="menuitem"
                     >
@@ -432,7 +432,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         <button
           onClick={() => setMobileOpen(false)}
           aria-label="Close menu"
-          className="md:hidden fixed top-6 left-[228px] z-[60] p-2 rounded-lg bg-white/90 text-gray-700 shadow"
+          className="md:hidden fixed top-6 left-[228px] z-[60] p-2 rounded-lg border border-border bg-background/95 text-foreground shadow-lg backdrop-blur-sm"
         >
           <X className="h-5 w-5" />
         </button>

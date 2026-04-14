@@ -10,18 +10,18 @@ const iconMap = {
 }
 
 const colorMap = {
-  lead: 'bg-slate-100 text-slate-700',
-  email: 'bg-slate-100 text-slate-700',
-  deal: 'bg-slate-100 text-slate-700',
-  task: 'bg-slate-100 text-slate-700',
-  appointment: 'bg-slate-100 text-slate-700',
+  lead: 'bg-muted text-foreground',
+  email: 'bg-muted text-foreground',
+  deal: 'bg-muted text-foreground',
+  task: 'bg-muted text-foreground',
+  appointment: 'bg-muted text-foreground',
 }
 
 export default function ActivityFeed({ activities }) {
   return (
-    <Card className="rounded-xl border border-slate-200 bg-white shadow-sm animate-fade-in">
+    <Card className="rounded-xl border border-border bg-card shadow-sm animate-fade-in">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold text-slate-900">Recent Activity</CardTitle>
+        <CardTitle className="text-base font-semibold text-foreground">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
@@ -30,15 +30,15 @@ export default function ActivityFeed({ activities }) {
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors animate-slide-up"
+                className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${colorMap[activity.type]}`}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900">{activity.message}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{activity.time}</p>
+                  <p className="text-sm font-medium text-foreground">{activity.message}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{activity.time}</p>
                 </div>
               </div>
             )

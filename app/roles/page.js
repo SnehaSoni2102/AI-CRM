@@ -82,10 +82,10 @@ function PermissionsTable({ permissions }) {
 
   return (
     <div className="space-y-2">
-      <h4 className="text-sm font-semibold text-slate-900">Permissions</h4>
+      <h4 className="text-sm font-semibold text-foreground">Permissions</h4>
       <div className="rounded-lg border border-slate-200">
         {/* Header */}
-        <div className="grid grid-cols-[2rem_1fr_6rem] bg-slate-50 border-b border-slate-200 px-2 py-2.5 text-xs font-medium text-slate-500">
+        <div className="grid grid-cols-[2rem_1fr_6rem] bg-muted/40 border-b border-border px-2 py-2.5 text-xs font-medium text-muted-foreground">
           <div />
           <div>Section</div>
           <div className="text-right pr-2">Modules</div>
@@ -98,16 +98,16 @@ function PermissionsTable({ permissions }) {
           const isLast = idx === entries.length - 1
 
           return (
-            <div key={sectionKey} className={!isLast || isExpanded ? 'border-b border-slate-200' : ''}>
+            <div key={sectionKey} className={!isLast || isExpanded ? 'border-b border-border' : ''}>
               {/* Section row */}
               <div
                 onClick={() => toggleSection(sectionKey)}
                 className="grid grid-cols-[2rem_1fr_6rem] items-center px-2 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
               >
-                <div className="text-slate-400 flex items-center">
+                <div className="text-muted-foreground/80 flex items-center">
                   {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </div>
-                <div className="font-medium text-slate-900 text-sm">{sectionName}</div>
+                <div className="font-medium text-foreground text-sm">{sectionName}</div>
                 <div className="flex justify-end pr-2">
                   <Badge variant="secondary" className="text-xs">{modules.length} modules</Badge>
                 </div>
@@ -117,10 +117,10 @@ function PermissionsTable({ permissions }) {
               {isExpanded && (
                 <div className="bg-slate-50/60 border-t border-slate-100 px-4 py-3">
                   {modules.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-1">No modules configured</p>
+                    <p className="text-xs text-muted-foreground/80 py-1">No modules configured</p>
                   ) : (
                     <div>
-                      <div className="flex justify-between pb-2 border-b border-slate-200 text-xs font-medium text-slate-400">
+                      <div className="flex justify-between pb-2 border-b border-border text-xs font-medium text-muted-foreground/80">
                         <span>Module</span>
                         <span>Allowed actions</span>
                       </div>
@@ -133,10 +133,10 @@ function PermissionsTable({ permissions }) {
                             className={`flex items-center justify-between py-2 ${mIdx < modules.length - 1 ? 'border-b border-slate-100' : ''}`}
                           >
                             <div>
-                              <span className="text-sm font-medium text-slate-800">
+                              <span className="text-sm font-medium text-foreground">
                                 {moduleKey === '*' ? 'Master' : moduleKey}
                               </span>
-                              <span className="ml-2 text-xs text-slate-400">
+                              <span className="ml-2 text-xs text-muted-foreground/80">
                                 {enabledCount > 0 ? `${enabledCount} allowed` : 'No access'}
                               </span>
                             </div>
@@ -407,10 +407,10 @@ export default function RolesPage() {
 
         {/* Roles (row layout) */}
         {!loading && (
-          <div className="rounded-xl border border-[#E2E8F0] bg-white overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-[#E2E8F0] hover:bg-transparent bg-[#F8FAFC]">
+                <TableRow className="border-b border-border hover:bg-transparent bg-muted/40">
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Role</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Permissions</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-[#64748B]">Created</TableHead>
@@ -434,8 +434,8 @@ export default function RolesPage() {
                             <Shield className="h-4.5 w-4.5 text-brand" />
                           </div>
                           <div className="min-w-0">
-                            <div className="font-medium text-slate-900 truncate">{role.role}</div>
-                            <div className="text-xs text-slate-500 truncate">
+                            <div className="font-medium text-foreground truncate">{role.role}</div>
+                            <div className="text-xs text-muted-foreground truncate">
                               {enabledSections.length > 0 ? `${enabledSections.length} sections enabled` : 'No permissions enabled'}
                             </div>
                           </div>
@@ -460,7 +460,7 @@ export default function RolesPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-sm text-slate-600">
+                      <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                         {formatDate(role.createdAt)}
                       </TableCell>
                       <TableCell className="py-3 px-4 text-right">
@@ -503,7 +503,7 @@ export default function RolesPage() {
         {/* Pagination */}
         {!loading && total > 0 && (
           <div className="flex flex-row items-center border-t border-slate-200 pt-4">
-            <div className="text-sm text-slate-600 w-52 flex-shrink-0">
+            <div className="text-sm text-muted-foreground w-52 flex-shrink-0">
               Showing page {currentPage} of {totalPages} ({total} total {total === 1 ? 'role' : 'roles'})
             </div>
             <div className="flex-1 flex justify-center">
@@ -554,9 +554,9 @@ export default function RolesPage() {
 
         {!loading && roles.length === 0 && (
           <div className="py-12 text-center">
-            <Shield className="mx-auto mb-4 h-12 w-12 text-slate-300" />
-            <p className="text-slate-500">No roles found</p>
-            <p className="mt-1 text-sm text-slate-400">Create your first role to get started</p>
+            <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground">No roles found</p>
+            <p className="mt-1 text-sm text-muted-foreground/80">Create your first role to get started</p>
             <Button variant="gradient" className="mt-4" onClick={openCreateRole}>
               <Shield className="mr-2 h-4 w-4" />
               Add Role
@@ -573,7 +573,7 @@ export default function RolesPage() {
             {loadingRoleDetails ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner size="md" />
-                <p className="ml-4 text-slate-500">Loading role details...</p>
+                <p className="ml-4 text-muted-foreground">Loading role details...</p>
               </div>
             ) : selectedRole ? (
               <div className="mt-4 space-y-6">
@@ -632,7 +632,7 @@ export default function RolesPage() {
               </div>
             ) : (
               <div className="py-12 text-center">
-                <p className="text-slate-500">Failed to load role details</p>
+                <p className="text-muted-foreground">Failed to load role details</p>
               </div>
             )}
           </DialogContent>

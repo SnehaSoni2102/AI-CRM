@@ -185,8 +185,8 @@ export default function LocationsPage() {
         {/* Filters */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-slate-900">Locations</h2>
-            <p className="text-sm text-slate-500">Manage branch locations and their details</p>
+            <h2 className="text-base font-semibold text-foreground">Locations</h2>
+            <p className="text-sm text-muted-foreground">Manage branch locations and their details</p>
           </div>
 
           <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end md:w-auto md:flex-nowrap md:gap-4">
@@ -311,7 +311,7 @@ export default function LocationsPage() {
             <div
               key={location._id || location.id || index}
               onClick={() => setSelectedLocationId(location._id || location.id)}
-              className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer animate-fade-in shadow-sm"
+              className="bg-card rounded-xl border border-border p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer animate-fade-in shadow-sm"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <div className="flex items-start gap-4">
@@ -319,8 +319,8 @@ export default function LocationsPage() {
                   <Building2 className="h-6 w-6 text-brand" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-slate-900 truncate">{location.name}</h3>
-                  <p className="text-sm text-slate-500 truncate mt-0.5">
+                  <h3 className="font-semibold text-foreground truncate">{location.name}</h3>
+                  <p className="text-sm text-muted-foreground truncate mt-0.5">
                     {location.city && location.state ? `${location.city}, ${location.state}` : location.address}
                   </p>
                   <Badge 
@@ -334,27 +334,27 @@ export default function LocationsPage() {
 
               <div className="mt-4 space-y-2 text-sm border-t border-slate-100 pt-4">
                 {location.address && (
-                  <div className="flex items-start gap-2 text-slate-600">
+                  <div className="flex items-start gap-2 text-muted-foreground">
                     <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                     <span className="text-xs line-clamp-2">{location.address}</span>
                   </div>
                 )}
                 {location.email && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="h-3.5 w-3.5 shrink-0" />
                     <span className="truncate text-xs">{location.email}</span>
                   </div>
                 )}
                 {location.phoneNumber && (
-                  <div className="flex items-center gap-2 text-slate-600">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-3.5 w-3.5 shrink-0" />
                     <span className="text-xs">{location.phoneNumber}</span>
                   </div>
                 )}
                 {location.createdAt && (
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-slate-500 text-xs">Created:</span>
-                    <span className="text-xs text-slate-700">{formatDate(location.createdAt)}</span>
+                    <span className="text-muted-foreground text-xs">Created:</span>
+                    <span className="text-xs text-foreground">{formatDate(location.createdAt)}</span>
                   </div>
                 )}
               </div>
@@ -366,7 +366,7 @@ export default function LocationsPage() {
         {/* Pagination */}
         {!loading && total > 0 && (
           <div className="flex flex-row items-center border-t border-slate-200 pt-4">
-            <div className="text-sm text-slate-600 w-52 flex-shrink-0">
+            <div className="text-sm text-muted-foreground w-52 flex-shrink-0">
               Showing page {currentPage} of {totalPages} ({total} total {total === 1 ? 'location' : 'locations'})
             </div>
             <div className="flex-1 flex justify-center">
@@ -423,9 +423,9 @@ export default function LocationsPage() {
 
         {!loading && displayedLocations.length === 0 && (
           <div className="text-center py-12">
-            <Building2 className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500">No locations found</p>
-            <p className="text-sm text-slate-400 mt-1">Create your first location to get started</p>
+            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No locations found</p>
+            <p className="text-sm text-muted-foreground/80 mt-1">Create your first location to get started</p>
           </div>
         )}
 
@@ -438,7 +438,7 @@ export default function LocationsPage() {
             {loadingLocationDetails ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner size="md" />
-                <p className="text-slate-500 ml-4">Loading location details...</p>
+                <p className="text-muted-foreground ml-4">Loading location details...</p>
               </div>
             ) : selectedLocation ? (
               <div className="space-y-6 mt-4">
@@ -531,7 +531,7 @@ export default function LocationsPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-slate-500">Failed to load location details</p>
+                <p className="text-muted-foreground">Failed to load location details</p>
               </div>
             )}
           </DialogContent>

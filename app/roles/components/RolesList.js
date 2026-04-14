@@ -15,9 +15,9 @@ export default function RolesList({ roles, loading, selectedRoleId, onSelect, on
   }, [roles, query])
 
   return (
-    <div className="col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col">
+    <div className="col-span-1 bg-card rounded-xl border border-border shadow-sm p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-slate-900">Roles</h3>
+        <h3 className="text-sm font-semibold text-foreground">Roles</h3>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => onSelect(null)} title="Clear selection">
             <X className="h-4 w-4" />
@@ -41,24 +41,24 @@ export default function RolesList({ roles, loading, selectedRoleId, onSelect, on
       </div>
 
       <div className="overflow-y-auto space-y-2" style={{ maxHeight: '64vh' }}>
-        {loading && <p className="text-sm text-slate-500">Loading...</p>}
-        {!loading && filtered.length === 0 && <p className="text-sm text-slate-500">No roles found</p>}
+        {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
+        {!loading && filtered.length === 0 && <p className="text-sm text-muted-foreground">No roles found</p>}
         {filtered.map((r) => (
           <div
             key={r._id}
             onClick={() => onSelect(r)}
-            className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${
+            className={`flex items-center justify-between gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
               selectedRoleId === r._id ? 'bg-brand/5 border border-brand/20' : ''
             }`}
           >
             <div className="min-w-0">
-              <p className="font-medium text-slate-900 truncate">{r.role}</p>
-              <p className="text-xs text-slate-400 truncate">{new Date(r.createdAt).toLocaleString()}</p>
+              <p className="font-medium text-foreground truncate">{r.role}</p>
+              <p className="text-xs text-muted-foreground/80 truncate">{new Date(r.createdAt).toLocaleString()}</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge className="badge-info">{Object.keys(r.permissions || {}).length}</Badge>
               <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onDelete(r._id) }} title="Delete role">
-                <Trash className="h-4 w-4 text-slate-500" />
+                <Trash className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
           </div>

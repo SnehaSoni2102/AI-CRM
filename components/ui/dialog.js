@@ -33,11 +33,11 @@ function Dialog({ open, onClose, children, maxWidth = 'lg' }) {
 
 function DialogContent({ className, children, onClose }) {
   return (
-    <div className={cn('relative bg-white rounded-xl border-2 border-slate-200 shadow-2xl p-6', className)}>
+    <div className={cn('relative rounded-xl border-2 border-border bg-card text-card-foreground shadow-2xl p-6', className)}>
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-full p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-all focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+          className="absolute right-4 top-4 z-10 rounded-full p-1.5 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>

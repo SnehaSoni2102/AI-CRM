@@ -10,16 +10,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import AppointmentComposerPanel from './components/AppointmentComposerPanel'
 
 const COLORS = {
-  border: '#F5F6F7',
-  shadow: '0px 2px 5px 0px rgba(38, 51, 77, 0.03)',
+  border: 'hsl(var(--border))',
+  shadow: '0px 2px 5px 0px hsl(var(--foreground) / 0.06)',
 }
 
 const TUTORS = [
-  { key: 't-1', initials: 'RG', name: 'Rachel Green', color: '#29CC39' },
-  { key: 't-2', initials: 'AS', name: 'Ariana Shah', color: '#FFCB33' },
-  { key: 't-3', initials: 'VK', name: 'Vikram Khanna', color: '#CD3358' },
-  { key: 't-4', initials: 'NP', name: 'Neha Patel', color: '#4CC9F0' },
-  { key: 't-5', initials: 'SM', name: 'Sana Malik', color: '#CE32E0' },
+  { key: 't-1', initials: 'RG', name: 'Rachel Green', color: 'var(--calendar-palette-1)' },
+  { key: 't-2', initials: 'AS', name: 'Ariana Shah', color: 'var(--calendar-palette-2)' },
+  { key: 't-3', initials: 'VK', name: 'Vikram Khanna', color: 'var(--calendar-palette-3)' },
+  { key: 't-4', initials: 'NP', name: 'Neha Patel', color: 'var(--calendar-palette-4)' },
+  { key: 't-5', initials: 'SM', name: 'Sana Malik', color: 'var(--calendar-palette-5)' },
 ]
 
 const VIEW_MODE = { DAY: 'day', WEEK: 'week', MONTH: 'month' }
@@ -233,8 +233,8 @@ function SegmentedButton({ active, children, className, onClick }) {
       type="button"
       onClick={onClick}
       className={[
-        'h-10 px-4 text-[12px] leading-none select-none bg-white border border-[#F5F6F7]',
-        active ? 'font-bold text-[#64748B]' : 'font-medium text-[#94A3B8]',
+        'h-10 px-4 text-[12px] leading-none select-none bg-background border border-border',
+        active ? 'font-bold text-foreground' : 'font-medium text-muted-foreground',
         className,
       ].filter(Boolean).join(' ')}
       style={{ boxShadow: COLORS.shadow }}
@@ -250,7 +250,7 @@ function IconCircleButton({ children, ariaLabel, onClick }) {
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className="h-10 w-10 rounded-full bg-white border border-[#F5F6F7] grid place-items-center"
+      className="h-10 w-10 rounded-full bg-background border border-border grid place-items-center"
       style={{ boxShadow: COLORS.shadow }}
     >
       {children}
@@ -263,7 +263,7 @@ function SmallRoundedButton({ children, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="h-10 rounded-[20px] px-4 bg-white border border-[#F5F6F7] text-[12px] font-bold text-[#94A3B8]"
+      className="h-10 rounded-[20px] px-4 bg-background border border-border text-[12px] font-bold text-muted-foreground"
       style={{ boxShadow: COLORS.shadow }}
     >
       {children}
@@ -346,41 +346,41 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
     : null
 
   return (
-    <div className="h-full overflow-auto rounded-[12px] border border-[#F5F6F7] bg-white">
+    <div className="h-full overflow-auto rounded-[12px] border border-border bg-background">
       <div style={{ minWidth: DAY_LEFT_RAIL_WIDTH + TUTORS.length * 180 }}>
-        <div className="sticky top-0 z-20 flex h-16 border-b border-[#F1F5F9] bg-white">
-          <div className="w-[86px] shrink-0 border-r border-[#F1F5F9] px-2 py-2 text-[10px] font-medium text-[#94A3B8]">
+        <div className="sticky top-0 z-20 flex h-16 border-b border-border bg-background">
+          <div className="w-[86px] shrink-0 border-r border-border px-2 py-2 text-[10px] font-medium text-muted-foreground">
             Teachers
           </div>
           {TUTORS.map((tutor, idx) => (
             <div
               key={tutor.key}
               className="flex-1 px-2 py-2"
-              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid #F1F5F9' : 'none' }}
+              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
               <div className="flex items-center justify-center gap-2">
                 <span
-                  className="inline-grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold text-white"
+                  className="inline-grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold text-brand-foreground"
                   style={{ backgroundColor: tutor.color }}
                 >
                   {tutor.initials}
                 </span>
-                <span className="truncate text-[11px] font-semibold text-[#0F172A]">{tutor.name}</span>
+                <span className="truncate text-[11px] font-semibold text-foreground">{tutor.name}</span>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex h-10 border-b border-[#F1F5F9] bg-[#FEFCE8]">
-          <div className="w-[86px] shrink-0 border-r border-[#F1F5F9] px-2 py-2 text-[10px] font-medium text-[#94A3B8]">All day</div>
+        <div className="flex h-10 border-b border-border bg-muted/40">
+          <div className="w-[86px] shrink-0 border-r border-border px-2 py-2 text-[10px] font-medium text-muted-foreground">All day</div>
           {TUTORS.map((tutor, idx) => (
             <div
               key={`allday-${tutor.key}`}
               className="flex-1 px-1.5 py-1"
-              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid #F1F5F9' : 'none' }}
+              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
               {byTutorAllDay[tutor.key].slice(0, 1).map((event) => (
-                <div key={event.id} className="truncate rounded bg-[#16A34A] px-2 py-0.5 text-[10px] text-white">
+                <div key={event.id} className="truncate rounded bg-[color:var(--studio-primary)] px-2 py-0.5 text-[10px] text-brand-foreground">
                   {event.title}
                 </div>
               ))}
@@ -389,12 +389,12 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
         </div>
 
         <div className="relative flex">
-          <div className="relative w-[86px] shrink-0 border-r border-[#F1F5F9]" style={{ height: dayHeight }}>
+          <div className="relative w-[86px] shrink-0 border-r border-border" style={{ height: dayHeight }}>
             {Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }).map((_, idx) => {
               const hour = DAY_START_HOUR + idx
               return (
                 <div key={hour} className="absolute left-0 right-0" style={{ top: idx * DAY_ROW_HEIGHT }}>
-                  <div className="-translate-y-1/2 px-2 text-[10px] font-medium text-[#94A3B8]">{formatHourLabel(hour)}</div>
+                  <div className="-translate-y-1/2 px-2 text-[10px] font-medium text-muted-foreground">{formatHourLabel(hour)}</div>
                 </div>
               )
             })}
@@ -403,13 +403,13 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
           {TUTORS.map((tutor, colIdx) => (
             <div
               key={`${tutor.key}-day-col`}
-              className="relative flex-1 bg-[#FEFCE8]"
-              style={{ height: dayHeight, borderRight: colIdx < TUTORS.length - 1 ? '1px solid #F1F5F9' : 'none' }}
+              className="relative flex-1 bg-muted/25"
+              style={{ height: dayHeight, borderRight: colIdx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
               {Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }).map((_, idx) => (
                 <div
                   key={`${tutor.key}-line-${idx}`}
-                  className="absolute left-0 right-0 border-t border-[#F3F4F6]"
+                  className="absolute left-0 right-0 border-t border-border/80"
                   style={{ top: idx * DAY_ROW_HEIGHT }}
                 />
               ))}
@@ -435,11 +435,11 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
                       borderColor: event.borderColor,
                     }}
                   >
-                    <div className="truncate text-[10px] font-semibold text-[#0F172A]">
+                    <div className="truncate text-[10px] font-semibold text-foreground">
                       {formatTime(event.start)} - {formatTime(event.end)}
                     </div>
-                    <div className="truncate text-[10px] text-[#334155]">{event.title}</div>
-                    <div className="truncate text-[9px] text-[#475569]">{event.extendedProps?.tutorName}</div>
+                    <div className="truncate text-[10px] text-muted-foreground">{event.title}</div>
+                    <div className="truncate text-[9px] text-muted-foreground/90">{event.extendedProps?.tutorName}</div>
                   </div>
                 )
               })}
@@ -450,9 +450,9 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
             <div className="pointer-events-none absolute left-0 right-0 z-30" style={{ top: nowOffset }}>
               <div className="flex items-center">
                 <div className="w-[86px] shrink-0 flex justify-center">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#16A34A]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--studio-primary)]" />
                 </div>
-                <div className="h-[2px] flex-1 bg-[#16A34A]" />
+                <div className="h-[2px] flex-1 bg-[color:var(--studio-primary)]" />
               </div>
             </div>
           )}
@@ -487,9 +487,11 @@ export default function CalendarPage() {
         start: event.start,
         end: event.end,
         allDay: event.allDay,
-        backgroundColor: event.allDay ? '#16A34A' : `${tutor.color}22`,
-        borderColor: event.allDay ? '#16A34A' : tutor.color,
-        textColor: event.allDay ? '#FFFFFF' : '#0F172A',
+        backgroundColor: event.allDay
+          ? 'var(--studio-primary)'
+          : `color-mix(in srgb, ${tutor.color} 14%, transparent)`,
+        borderColor: event.allDay ? 'var(--studio-primary)' : tutor.color,
+        textColor: event.allDay ? 'rgb(var(--studio-on-primary-rgb))' : 'hsl(var(--foreground))',
         extendedProps: {
           tutorName: event.tutorName,
           tutorKey: event.tutorKey,
@@ -574,17 +576,17 @@ export default function CalendarPage() {
   return (
     <MainLayout title="Calendar" subtitle="">
       <div className="w-full h-full">
-        <div className="bg-white rounded-[24px_0px_24px_24px] w-full flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
+        <div className="bg-background rounded-[24px_0px_24px_24px] w-full flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
           <div className="shrink-0 px-6 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <SmallRoundedButton onClick={goToToday}>Today</SmallRoundedButton>
               <div className="flex items-center gap-3">
                 <IconCircleButton ariaLabel="Previous" onClick={() => shiftView(-1)}>
-                  <ChevronLeft className="h-4 w-4 text-[#94A3B8]" />
+                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                 </IconCircleButton>
-                <div className="text-[12px] font-bold text-[#94A3B8]">{headerLabel}</div>
+                <div className="text-[12px] font-bold text-muted-foreground">{headerLabel}</div>
                 <IconCircleButton ariaLabel="Next" onClick={() => shiftView(1)}>
-                  <ChevronRight className="h-4 w-4 text-[#94A3B8]" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </IconCircleButton>
               </div>
             </div>
@@ -617,7 +619,7 @@ export default function CalendarPage() {
               <button
                 type="button"
                 onClick={() => setIsAppointmentPanelOpen(true)}
-                className="h-10 rounded-[20px] bg-[#D61F8C] px-5 text-[12px] font-bold text-white hover:bg-[#C2187E]"
+                className="h-10 rounded-[20px] bg-brand px-5 text-[12px] font-bold text-brand-foreground hover:bg-brand-dark transition-colors"
               >
                 Create Appointment
               </button>
@@ -635,7 +637,7 @@ export default function CalendarPage() {
                     dayAllDayEvents={dayAllDayEvents}
                   />
                 ) : (
-                  <div className="h-full overflow-hidden rounded-[12px] border border-[#F5F6F7] bg-white calendar-shell">
+                  <div className="h-full overflow-hidden rounded-[12px] border border-border bg-background calendar-shell">
                     <FullCalendar
                       ref={calendarRef}
                       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

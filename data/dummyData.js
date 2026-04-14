@@ -125,7 +125,7 @@ export const revenueData = [
 
 // Pipeline Data
 export const pipelineData = [
-  { name: 'New Leads', value: 35, color: 'hsl(var(--primary))' },
+  { name: 'New Leads', value: 35, color: 'var(--studio-primary)' },
   { name: 'Contacted', value: 25, color: '#8B5CF6' },
   { name: 'Qualified', value: 20, color: '#EC4899' },
   { name: 'Proposal', value: 12, color: '#F59E0B' },
@@ -134,7 +134,7 @@ export const pipelineData = [
 
 // Lead Sources Data
 export const leadSourcesData = [
-  { name: 'Website', value: 450, color: 'hsl(var(--primary))' },
+  { name: 'Website', value: 450, color: 'var(--studio-primary)' },
   { name: 'Referral', value: 320, color: '#10B981' },
   { name: 'Social Media', value: 280, color: '#EC4899' },
   { name: 'Walk-in', value: 150, color: '#F59E0B' },

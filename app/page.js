@@ -7,6 +7,7 @@ import { dashboardStats } from '@/data/dummyData'
 import { getEffectiveBranch, isSuperAdmin, isAdmin } from '@/lib/auth'
 import { branches } from '@/data/dummyData'
 import { cn } from '@/lib/utils'
+import { chartGridStroke, chartAxisStroke, rechartsTooltipContentStyle } from '@/lib/chartStyles'
 import {
   AreaChart,
   Area,
@@ -125,7 +126,6 @@ const perStudioBreakdown = [
 
 // Use CSS variables so colors can be changed globally from globals.css
 const PRIMARY = 'var(--studio-primary)'
-const PRIMARY_LIGHT = 'var(--studio-primary-light)'
 // Gradient color from Figma color panel
 const GRADIENT_COLOR = 'var(--studio-gradient)'
 
@@ -138,7 +138,7 @@ function BackdropBar(props) {
       y={y}
       width={width}
       height={height}
-      fill={'#F4E9FD'}
+      fill="hsl(var(--primary) / 0.12)"
       rx={4}
       ry={4}
     />
@@ -147,17 +147,7 @@ function BackdropBar(props) {
 
 function SectionLabel({ children }) {
   return (
-    <p
-      style={{
-        fontFamily: 'Inter, system-ui, sans-serif',
-        fontWeight: 700,
-        fontSize: 16,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: 'var(--studio-primary)',
-        marginBottom: 8,
-      }}
-    >
+    <p className="mb-2 font-bold text-base tracking-[0.12em] uppercase text-[var(--studio-primary)]">
       {children}
     </p>
   )
@@ -166,7 +156,7 @@ function SectionLabel({ children }) {
 function Card({ children, className = '' }) {
   return (
     <div
-      className={`bg-white border border-slate-100 shadow-sm ${className} overflow-hidden`}
+      className={`bg-card text-card-foreground border border-border shadow-sm ${className} overflow-hidden`}
       style={{ borderRadius: 20 }}
     >
       {children}
@@ -203,10 +193,10 @@ export default function Dashboard() {
 
         {/* Branch Context */}
         {/* {isSuperAdmin() && (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+          <div className="rounded-xl border border-border bg-muted/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
             <div>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#64748B' }}>Viewing data for</p>
-              <p className="text-base font-semibold text-slate-900">
+              <p className="text-xs uppercase tracking-wide mb-1 text-muted-foreground">Viewing data for</p>
+              <p className="text-base font-semibold text-foreground">
                 {selectedBranch ? `${selectedBranch.name} Branch` : 'All Branches'}
               </p>
             </div>
@@ -217,10 +207,10 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <Card className="p-4">
             <div className="flex items-start justify-between">
-              <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: PRIMARY }}>TOTAL LEADS</p>
+              <p className="text-xs uppercase tracking-wide font-semibold text-[var(--studio-primary)]">TOTAL LEADS</p>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[46px] font-bold" style={{ color: '#050312' }}>1,248</p>
+              <p className="text-[46px] font-bold text-foreground">1,248</p>
               <div className="flex items-center text-sm text-emerald-600 font-medium">
                 <TrendingUp size={14} className="mr-2" />
                 <span className="text-[13px]">0.8% vs last week</span>
@@ -230,10 +220,10 @@ export default function Dashboard() {
 
           <Card className="p-4">
             <div className="flex items-start justify-between">
-              <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: PRIMARY }}>TOTAL BOOKINGS</p>
+              <p className="text-xs uppercase tracking-wide font-semibold text-[var(--studio-primary)]">TOTAL BOOKINGS</p>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[46px] font-bold" style={{ color: '#050312' }}>42</p>
+              <p className="text-[46px] font-bold text-foreground">42</p>
               <div className="flex items-center text-sm text-emerald-600 font-medium">
                 <TrendingUp size={14} className="mr-2" />
                 <span className="text-[13px]">0.8% vs last week</span>
@@ -243,10 +233,10 @@ export default function Dashboard() {
 
           <Card className="p-4">
             <div className="flex items-start justify-between">
-              <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: PRIMARY }}>BOOKING RATE</p>
+              <p className="text-xs uppercase tracking-wide font-semibold text-[var(--studio-primary)]">BOOKING RATE</p>
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[46px] font-bold" style={{ color: '#050312' }}>17%</p>
+              <p className="text-[46px] font-bold text-foreground">17%</p>
               <div className="flex items-center text-sm text-rose-500 font-medium">
                 <TrendingDown size={14} className="mr-2" />
                 <span className="text-[13px]">0.8% vs last week</span>
@@ -267,15 +257,15 @@ export default function Dashboard() {
                   <stop offset="100%" stopColor={GRADIENT_COLOR} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} vertical={false} />
               <XAxis
                 dataKey="week"
-                tick={{ fontSize: 10, fill: '#64748B' }}
+                tick={{ fontSize: 10, fill: chartAxisStroke }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: '#64748B' }}
+                tick={{ fontSize: 10, fill: chartAxisStroke }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `${v}%`}
@@ -283,7 +273,7 @@ export default function Dashboard() {
                 ticks={[0, 5, 10, 15, 20, 25]}
               />
               <Tooltip
-                contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontSize: 12 }}
+                contentStyle={{ ...rechartsTooltipContentStyle, borderRadius: 10 }}
                 formatter={(v) => [`${v}%`, 'Booking Rate']}
               />
               <Area
@@ -306,8 +296,8 @@ export default function Dashboard() {
           <div className="flex flex-col gap-5">
             <Card className="p-5">
               <SectionLabel>Revenue Collected from Intros</SectionLabel>
-              <p className="text-[46px] font-bold mt-1" style={{ color: '#050312' }}>$2,940</p>
-              <p className="mt-2 text-sm" style={{ color: '#64748B' }}>
+              <p className="text-[46px] font-bold mt-1 text-foreground">$2,940</p>
+              <p className="mt-2 text-sm text-muted-foreground">
                 42 intros × $70 each &nbsp;|&nbsp;
                 <span className="text-emerald-600 font-medium">↑ 8% vs last week</span>
               </p>
@@ -315,34 +305,34 @@ export default function Dashboard() {
 
             <Card className="p-5">
               <SectionLabel>Human Intervention Required</SectionLabel>
-              <p className="text-[46px] font-bold mt-1" style={{ color: '#050312' }}>8</p>
-              <button className="mt-3 flex items-center gap-1 text-xs font-medium transition-colors" style={{ color: PRIMARY }}>
+              <p className="text-[46px] font-bold mt-1 text-foreground">8</p>
+              <button className="mt-3 flex items-center gap-1 text-xs font-medium transition-colors text-[var(--studio-primary)] hover:opacity-90">
                 Click to view details <ChevronRight size={12} />
               </button>
             </Card>
           </div>
 
           {/* Right col: AI Agent Revenue chart */}
-          <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+          <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
             <div className="flex items-center justify-between gap-6">
               <div>
                 <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
                   AI Agent Revenue
                 </p>
-                <p className="text-[14px] font-medium text-[#9CA3AF]">Year-over-year Comparison</p>
+                <p className="text-[14px] font-medium text-muted-foreground">Year-over-year Comparison</p>
               </div>
-              <p className="text-[38px] font-bold bg-gradient-to-b from-slate-500 to-[#050312] bg-clip-text text-transparent">
+              <p className="text-[38px] font-bold bg-gradient-to-b from-muted-foreground to-foreground bg-clip-text text-transparent">
                 $11,000
               </p>
             </div>
 
             {/* Legend */}
             <div className="flex items-center gap-3 mt-3">
-              <span className="flex items-center gap-2 text-[14px]" style={{ color: '#64748B' }}>
+              <span className="flex items-center gap-2 text-[14px] text-muted-foreground">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--studio-primary)' }} />
                 2026
               </span>
-              <span className="flex items-center gap-2 text-[14px]" style={{ color: '#64748B' }}>
+              <span className="flex items-center gap-2 text-[14px] text-muted-foreground">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ background: 'var(--studio-primary-light)' }} />
                 2025
               </span>
@@ -363,18 +353,18 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
 
-                <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <CartesianGrid stroke={chartGridStroke} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: chartAxisStroke }} axisLine={false} tickLine={false} />
                 <YAxis
                   width={40}
-                  tick={{ fontSize: 12, fill: '#64748B' }}
+                  tick={{ fontSize: 12, fill: chartAxisStroke }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => (v === 0 ? '0' : `${v / 1000}k`)}
                   ticks={[0, 2000, 4000, 6000, 8000, 10000, 12000]}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontSize: 12 }}
+                  contentStyle={{ ...rechartsTooltipContentStyle, borderRadius: 10 }}
                   formatter={(v) => [`$${Number(v).toLocaleString()}`]}
                 />
                 {/* 2025 lighter bar — slightly wider, renders first (behind) */}
@@ -388,7 +378,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── API Expense by Channel ── */}
-        <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+        <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
           <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
             API Expense by channel (This Month)
           </p>
@@ -397,15 +387,15 @@ export default function Dashboard() {
             <div className="min-w-[860px]">
               <div className="grid grid-cols-[2.2fr_1fr_1fr_1fr_0.8fr_2fr] gap-6 pb-2">
                 {['Channel', 'Total Uses', 'Cost/Use', 'Total Cost', '% of Total', 'Cost Visual'].map((h) => (
-                  <div key={h} className="text-[14px] font-bold text-slate-900">
+                  <div key={h} className="text-[14px] font-bold text-foreground">
                     {h}
                   </div>
                 ))}
               </div>
 
-              <div className="h-px bg-slate-200/40" />
+              <div className="h-px bg-border" />
 
-              <div className="divide-y divide-slate-200/40">
+              <div className="divide-y divide-border">
                 {apiExpenseData.map((row, i) => {
                   const isTotal = !!row.isTotal
                   return (
@@ -413,7 +403,7 @@ export default function Dashboard() {
                       key={i}
                       className={cn(
                         'grid grid-cols-[2.2fr_1fr_1fr_1fr_0.8fr_2fr] gap-6 py-3',
-                        isTotal ? 'font-semibold text-slate-900' : 'text-slate-900'
+                        isTotal ? 'font-semibold text-foreground' : 'text-foreground'
                       )}
                     >
                       <div className="text-[14px]">{row.channel}</div>
@@ -425,7 +415,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         {!isTotal ? (
                           <>
-                            <div className="h-3 flex-1 rounded-full bg-slate-100">
+                            <div className="h-3 flex-1 rounded-full bg-muted">
                               <div
                                 className="h-3 rounded-full"
                                 style={{
@@ -434,10 +424,10 @@ export default function Dashboard() {
                                 }}
                               />
                             </div>
-                            <span className="text-[12px] text-slate-500 whitespace-nowrap">{row.totalCost}</span>
+                            <span className="text-[12px] text-muted-foreground whitespace-nowrap">{row.totalCost}</span>
                           </>
                         ) : (
-                          <span className="text-[12px] text-slate-500 whitespace-nowrap">{row.totalCost}</span>
+                          <span className="text-[12px] text-muted-foreground whitespace-nowrap">{row.totalCost}</span>
                         )}
                       </div>
                     </div>
@@ -451,7 +441,7 @@ export default function Dashboard() {
         {/* ── Human Intervention (Figma) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Left: Human intervention by stage */}
-          <Card className="p-5 lg:col-span-2 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+          <Card className="p-5 lg:col-span-2 rounded-[20px] border-2 border-border shadow-sm">
             <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
               Human Intervention by Stage
             </p>
@@ -459,24 +449,24 @@ export default function Dashboard() {
             <div className="mt-4">
               <div className="grid grid-cols-[1.4fr_0.5fr_0.4fr_1.2fr] gap-4 pb-2">
                 {['Stage', 'Count', '%', 'Visual Cost'].map((h) => (
-                  <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                  <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                     {h}
                   </div>
                 ))}
               </div>
-              <div className="h-px bg-slate-200/40" />
+              <div className="h-px bg-border" />
 
-              <div className="divide-y divide-slate-200/40">
+              <div className="divide-y divide-border">
                 {humanInterventionByStage.map((row) => (
                   <div
                     key={row.stage}
-                    className="grid grid-cols-[1.4fr_0.5fr_0.4fr_1.2fr] gap-4 py-3 text-[13px] text-slate-900"
+                    className="grid grid-cols-[1.4fr_0.5fr_0.4fr_1.2fr] gap-4 py-3 text-[13px] text-foreground"
                   >
                     <div className="truncate">{row.stage}</div>
                     <div>{row.count}</div>
                     <div>{row.pct}%</div>
                     <div className="flex items-center gap-3">
-                      <div className="h-3 flex-1 rounded-full bg-slate-100">
+                      <div className="h-3 flex-1 rounded-full bg-muted">
                         <div
                           className="h-3 rounded-full"
                           style={{
@@ -485,18 +475,18 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[12px] text-[#64748B] whitespace-nowrap">
+                      <span className="text-[12px] text-muted-foreground whitespace-nowrap">
                         ${row.visualCost.toFixed(2)}
                       </span>
                     </div>
                   </div>
                 ))}
 
-                <div className="grid grid-cols-[1.4fr_0.5fr_0.4fr_1.2fr] gap-4 py-3 text-[13px] font-semibold text-slate-900">
+                <div className="grid grid-cols-[1.4fr_0.5fr_0.4fr_1.2fr] gap-4 py-3 text-[13px] font-semibold text-foreground">
                   <div>Total</div>
                   <div>{humanInterventionByStage.reduce((a, r) => a + r.count, 0)}</div>
                   <div>100%</div>
-                  <div className="text-[12px] text-[#64748B]">
+                  <div className="text-[12px] text-muted-foreground">
                     ${humanInterventionByStage.reduce((a, r) => a + r.visualCost, 0).toFixed(2)}
                   </div>
                 </div>
@@ -505,7 +495,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Right: Booking rate */}
-          <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+          <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
             <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
               Human Intervention Booking Rate
             </p>
@@ -513,8 +503,8 @@ export default function Dashboard() {
             <div className="mt-4 space-y-3">
               {humanInterventionBookingRate.map((item) => (
                 <div key={item.label} className="flex items-center justify-between gap-4">
-                  <span className="text-[12px] text-[#64748B]">{item.label}</span>
-                  <span className="text-[12px] font-semibold text-slate-900 whitespace-nowrap">{item.value}</span>
+                  <span className="text-[12px] text-muted-foreground">{item.label}</span>
+                  <span className="text-[12px] font-semibold text-foreground whitespace-nowrap">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -522,7 +512,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── Follow-up Effectiveness (Figma) ── */}
-        <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+        <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
           <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
             Follow-up Effectiveness
           </p>
@@ -531,22 +521,22 @@ export default function Dashboard() {
             <div className="min-w-[860px]">
               <div className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 pb-2">
                 {['Contacts', 'Sent', 'Reply', 'Rate', 'Visual Cost'].map((h) => (
-                  <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                  <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                     {h}
                   </div>
                 ))}
               </div>
-              <div className="h-px bg-slate-200/40" />
+              <div className="h-px bg-border" />
 
-              <div className="divide-y divide-slate-200/40">
+              <div className="divide-y divide-border">
                 {followUpEffectiveness.map((row) => (
-                  <div key={row.contacts} className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-slate-900">
+                  <div key={row.contacts} className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-foreground">
                     <div>{row.contacts}</div>
                     <div>{row.sent}</div>
                     <div>{row.reply}</div>
                     <div>{row.rate}</div>
                     <div className="flex items-center gap-3">
-                      <div className="h-3 flex-1 rounded-full bg-slate-100">
+                      <div className="h-3 flex-1 rounded-full bg-muted">
                         <div
                           className="h-3 rounded-full"
                           style={{
@@ -555,17 +545,17 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[12px] text-[#64748B] whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
+                      <span className="text-[12px] text-muted-foreground whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
 
-                <div className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-slate-900">
+                <div className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-foreground">
                   <div>Total</div>
                   <div>{followUpEffectiveness.reduce((a, r) => a + r.sent, 0)}</div>
                   <div>{followUpEffectiveness.reduce((a, r) => a + r.reply, 0)}</div>
                   <div>100%</div>
-                  <div className="text-[12px] text-[#64748B]">
+                  <div className="text-[12px] text-muted-foreground">
                     ${followUpEffectiveness.reduce((a, r) => a + r.visualCost, 0).toFixed(2)}
                   </div>
                 </div>
@@ -575,33 +565,33 @@ export default function Dashboard() {
         </Card>
 
         {/* ── Response Rate by Day & Time (Figma) ── */}
-        <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+        <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
           <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
             Response Rate by Day &amp; Time
           </p>
 
           <div className="mt-4 space-y-6">
             <div>
-              <p className="text-[12px] font-semibold text-slate-900">By Day of Week:</p>
+              <p className="text-[12px] font-semibold text-foreground">By Day of Week:</p>
 
               <div className="mt-2">
                 <div className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 pb-2">
                   {['Day', 'Sent', 'Reply', 'Rate', 'Visual Cost'].map((h) => (
-                    <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                    <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                       {h}
                     </div>
                   ))}
                 </div>
-                <div className="h-px bg-slate-200/40" />
-                <div className="divide-y divide-slate-200/40">
+                <div className="h-px bg-border" />
+                <div className="divide-y divide-border">
                   {responseRateByDayOfWeek.map((row) => (
-                    <div key={row.day} className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 py-3 text-[13px] text-slate-900">
+                    <div key={row.day} className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 py-3 text-[13px] text-foreground">
                       <div className="truncate">{row.day}</div>
                       <div>{row.sent}</div>
                       <div>{row.reply}</div>
                       <div>{row.rate}</div>
                       <div className="flex items-center gap-3">
-                        <div className="h-3 flex-1 rounded-full bg-slate-100">
+                        <div className="h-3 flex-1 rounded-full bg-muted">
                           <div
                             className="h-3 rounded-full"
                             style={{
@@ -610,7 +600,7 @@ export default function Dashboard() {
                             }}
                           />
                         </div>
-                        <span className="text-[12px] text-[#64748B] whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
+                        <span className="text-[12px] text-muted-foreground whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
@@ -619,26 +609,26 @@ export default function Dashboard() {
             </div>
 
             <div>
-              <p className="text-[12px] font-semibold text-slate-900">By Time of Day:</p>
+              <p className="text-[12px] font-semibold text-foreground">By Time of Day:</p>
 
               <div className="mt-2">
                 <div className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 pb-2">
                   {['Time', 'Sent', 'Reply', 'Rate', 'Visual Cost'].map((h) => (
-                    <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                    <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                       {h}
                     </div>
                   ))}
                 </div>
-                <div className="h-px bg-slate-200/40" />
-                <div className="divide-y divide-slate-200/40">
+                <div className="h-px bg-border" />
+                <div className="divide-y divide-border">
                   {responseRateByTimeOfDay.map((row) => (
-                    <div key={row.time} className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 py-3 text-[13px] text-slate-900">
+                    <div key={row.time} className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_2fr] gap-4 py-3 text-[13px] text-foreground">
                       <div className="truncate">{row.time}</div>
                       <div>{row.sent}</div>
                       <div>{row.reply}</div>
                       <div>{row.rate}</div>
                       <div className="flex items-center gap-3">
-                        <div className="h-3 flex-1 rounded-full bg-slate-100">
+                        <div className="h-3 flex-1 rounded-full bg-muted">
                           <div
                             className="h-3 rounded-full"
                             style={{
@@ -647,7 +637,7 @@ export default function Dashboard() {
                             }}
                           />
                         </div>
-                        <span className="text-[12px] text-[#64748B] whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
+                        <span className="text-[12px] text-muted-foreground whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
@@ -658,7 +648,7 @@ export default function Dashboard() {
         </Card>
 
         {/* ── Leads by Source & Conversion Rate (Figma) ── */}
-        <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+        <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
           <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
             Leads by Source &amp; Conversion Rate
           </p>
@@ -667,18 +657,18 @@ export default function Dashboard() {
             <div className="min-w-[920px]">
               <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 pb-2">
                 {['Lead Source', 'Total Leads', 'Bookings', 'Conv Rate', 'Cost/Lead', 'Visual Cost'].map((h) => (
-                  <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                  <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                     {h}
                   </div>
                 ))}
               </div>
-              <div className="h-px bg-slate-200/40" />
+              <div className="h-px bg-border" />
 
-              <div className="divide-y divide-slate-200/40">
+              <div className="divide-y divide-border">
                 {leadsBySourceConversion.map((row, idx) => (
                   <div
                     key={`${row.leadSource}-${idx}`}
-                    className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-slate-900"
+                    className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-foreground"
                   >
                     <div className="truncate">{row.leadSource}</div>
                     <div>{row.totalLeads}</div>
@@ -686,7 +676,7 @@ export default function Dashboard() {
                     <div>{row.convRate}</div>
                     <div>{row.costPerLead}</div>
                     <div className="flex items-center gap-3">
-                      <div className="h-3 flex-1 rounded-full bg-slate-100">
+                      <div className="h-3 flex-1 rounded-full bg-muted">
                         <div
                           className="h-3 rounded-full"
                           style={{
@@ -695,18 +685,18 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[12px] text-[#64748B] whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
+                      <span className="text-[12px] text-muted-foreground whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
 
-                <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-slate-900">
+                <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-foreground">
                   <div>Total</div>
                   <div>{leadsBySourceConversion.reduce((a, r) => a + r.totalLeads, 0)}</div>
                   <div>{leadsBySourceConversion.reduce((a, r) => a + r.bookings, 0)}</div>
                   <div>100%</div>
                   <div />
-                  <div className="text-[12px] text-[#64748B]">
+                  <div className="text-[12px] text-muted-foreground">
                     ${leadsBySourceConversion.reduce((a, r) => a + r.visualCost, 0).toFixed(2)}
                   </div>
                 </div>
@@ -716,7 +706,7 @@ export default function Dashboard() {
         </Card>
 
         {/* ── Per Studio Breakdown (Figma) ── */}
-        <Card className="p-5 rounded-[20px] border-2 border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]">
+        <Card className="p-5 rounded-[20px] border-2 border-border shadow-sm">
           <p className="text-[16px] font-bold tracking-[0.08em] text-[var(--studio-primary)] uppercase">
             Per Studio Breakdown
           </p>
@@ -725,25 +715,25 @@ export default function Dashboard() {
             <div className="min-w-[860px]">
               <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_2fr] gap-6 pb-2">
                 {['Location', 'Total Leads', 'Bookings', 'Booking Rate', 'Visual Cost'].map((h) => (
-                  <div key={h} className="text-[12px] font-semibold text-[#64748B]">
+                  <div key={h} className="text-[12px] font-semibold text-muted-foreground">
                     {h}
                   </div>
                 ))}
               </div>
-              <div className="h-px bg-slate-200/40" />
+              <div className="h-px bg-border" />
 
-              <div className="divide-y divide-slate-200/40">
+              <div className="divide-y divide-border">
                 {perStudioBreakdown.map((row, idx) => (
                   <div
                     key={`${row.location}-${idx}`}
-                    className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-slate-900"
+                    className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] text-foreground"
                   >
                     <div className="truncate">{row.location}</div>
                     <div>{row.totalLeads}</div>
                     <div>{row.bookings}</div>
                     <div>{row.bookingRate}</div>
                     <div className="flex items-center gap-3">
-                      <div className="h-3 flex-1 rounded-full bg-slate-100">
+                      <div className="h-3 flex-1 rounded-full bg-muted">
                         <div
                           className="h-3 rounded-full"
                           style={{
@@ -752,17 +742,17 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[12px] text-[#64748B] whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
+                      <span className="text-[12px] text-muted-foreground whitespace-nowrap">${row.visualCost.toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
 
-                <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-slate-900">
+                <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_2fr] gap-6 py-3 text-[13px] font-semibold text-foreground">
                   <div>Total</div>
                   <div>{perStudioBreakdown.reduce((a, r) => a + r.totalLeads, 0)}</div>
                   <div>{perStudioBreakdown.reduce((a, r) => a + r.bookings, 0)}</div>
                   <div>100%</div>
-                  <div className="text-[12px] text-[#64748B]">
+                  <div className="text-[12px] text-muted-foreground">
                     ${perStudioBreakdown.reduce((a, r) => a + r.visualCost, 0).toFixed(2)}
                   </div>
                 </div>
@@ -775,16 +765,16 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Card className="p-5">
             <SectionLabel>Gross Revenue (AI Agent Intro Bookings)</SectionLabel>
-            <p className="text-[46px] font-bold mt-1" style={{ color: '#050312' }}>$2,940</p>
-            <p className="mt-2 text-sm" style={{ color: '#64748B' }}>42 intros × $70 each</p>
+            <p className="text-[46px] font-bold mt-1 text-foreground">$2,940</p>
+            <p className="mt-2 text-sm text-muted-foreground">42 intros × $70 each</p>
           </Card>
 
           <Card className="p-5">
             <SectionLabel>Net Revenue (Revenue – API Costs)</SectionLabel>
-            <p className="text-[46px] font-bold mt-1" style={{ color: '#00AA34' }}>$2811.10</p>
-            <p className="mt-2 text-sm" style={{ color: '#64748B' }}>
+            <p className="text-[46px] font-bold mt-1 text-emerald-600 dark:text-emerald-400">$2811.10</p>
+            <p className="mt-2 text-sm text-muted-foreground">
               42 intros × $70 each &nbsp;|&nbsp;
-              <span className="text-emerald-600 font-medium">↑ 8% vs last week</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">↑ 8% vs last week</span>
             </p>
           </Card>
         </div>

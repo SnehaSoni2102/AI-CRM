@@ -41,13 +41,13 @@ export default function MessageInput({ onSendMessage, channel = 'SMS' }) {
   const minDateTime = new Date(Date.now() + 60000).toISOString().slice(0, 16)
 
   return (
-    <div className="p-1 bg-slate-50 space-y-1">
+    <div className="p-1 bg-transparent space-y-1">
       {channel === 'Email' && (
         <Input
           placeholder="Subject…"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white text-sm"
+          className="rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground"
         />
       )}
       <div className="relative">
@@ -56,7 +56,7 @@ export default function MessageInput({ onSendMessage, channel = 'SMS' }) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="min-h-[64px] sm:min-h-[80px] resize-none rounded-xl border border-slate-200 bg-white focus:border-[color:var(--studio-primary)] text-sm pb-10"
+          className="min-h-[64px] sm:min-h-[80px] resize-none rounded-xl border border-border bg-background focus:border-[color:var(--studio-primary)] text-sm text-foreground placeholder:text-muted-foreground pb-10"
         />
         {/* Schedule toggle inside textarea bottom-left */}
         <button
@@ -65,7 +65,7 @@ export default function MessageInput({ onSendMessage, channel = 'SMS' }) {
           className={`absolute left-3 bottom-2.5 flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
             scheduleMode === 'later'
               ? 'bg-[color:var(--studio-primary-light)] text-[color:var(--studio-primary)]'
-              : 'text-[#94A3B8] hover:text-slate-600'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
           title="Schedule"
         >

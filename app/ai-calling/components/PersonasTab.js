@@ -23,8 +23,8 @@ const API_BASE = (
 ).replace(/\/$/, '')
 
 const GENDER_COLORS = {
-  male: 'bg-blue-50 text-blue-700 border-blue-200',
-  female: 'bg-pink-50 text-pink-700 border-pink-200',
+  male: 'bg-brand/10 text-brand border-brand/25',
+  female: 'bg-[color:color-mix(in_srgb,var(--studio-gradient)_14%,transparent)] text-[color:var(--studio-gradient)] border-[color:color-mix(in_srgb,var(--studio-gradient)_35%,transparent)]',
 }
 
 function getNextCopyName(baseName, personas = []) {

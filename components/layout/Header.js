@@ -183,7 +183,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
-import { Bell, MapPin, ChevronDown, Menu, Search, LogOut } from 'lucide-react'
+import { Bell, MapPin, ChevronDown, Menu, Search, LogOut, Moon, Sun } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
 import BranchSelector from '@/components/shared/BranchSelector'
 import { getCurrentUser, logout } from '@/lib/auth'
@@ -202,6 +203,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileRef = useRef(null)
   const user = getCurrentUser()
+  const { theme, setTheme, mounted: themeMounted } = useTheme()
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -274,12 +276,12 @@ export default function Header({ title, subtitle, onMenuClick }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 min-h-[86px] bg-white">
-      <div className="flex min-h-[86px] items-center justify-between px-6">
+    <header className="sticky top-0 z-30 border-b py-3 border-border bg-background">
+      <div className="flex items-center justify-between px-6">
 
         {/* LEFT SECTION — ROUTE-SPECIFIC NAV */}
         {isInbox ? (
-          <div className="flex items-center h-[44px] rounded-full bg-[#F1F5F9] p-1">
+          <div className="flex items-center h-[44px] rounded-full bg-muted p-1">
             {INBOX_FILTERS.map(({ value, label }) => {
               const isActive = inboxFilter === value
               const isTeachers = value === 'teachers'
@@ -293,7 +295,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
 
                     isActive
                       ? 'text-[var(--studio-primary)] font-semibold'
-                      : 'text-slate-500 hover:text-[var(--studio-primary)]'
+                      : 'text-muted-foreground hover:text-[var(--studio-primary)]'
                   )}
                 >
                   <span>{label}</span>
@@ -304,7 +306,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                         'ml-2 min-w-[22px] h-5 px-2 rounded-full text-xs flex items-center justify-center',
                         isActive
                           ? 'bg-[var(--studio-primary-light)] text-[var(--studio-primary)]'
-                          : 'bg-slate-200 text-slate-600'
+                          : 'bg-muted text-muted-foreground'
                       )}
                     >
                       {inboxTeachersCount}
@@ -316,7 +318,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
           </div>
         ) : isForms ? (
           <div className="flex items-center h-[44px]">
-            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+            <div className="flex items-center gap-8 rounded-full bg-muted px-6 py-2">
               {[
                 { value: 'templates', label: 'Templates' },
                 { value: 'builder', label: 'Form Builder' },
@@ -329,7 +331,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     onClick={() => setFormsView(value)}
                     className={cn(
                       'text-sm font-medium transition-colors duration-200',
-                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -340,7 +342,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
           </div>
         ) : isSms ? (
           <div className="flex items-center h-[44px]">
-            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+            <div className="flex items-center gap-8 rounded-full bg-muted px-6 py-2">
               {[
                 { value: 'templates', label: 'SMS Templates' },
                 { value: 'creator', label: 'SMS Creator' },
@@ -353,7 +355,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     onClick={() => setSmsView(value)}
                     className={cn(
                       'text-sm font-medium transition-colors duration-200',
-                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -364,7 +366,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
           </div>
         ) : isEmails ? (
           <div className="flex items-center h-[44px]">
-            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+            <div className="flex items-center gap-8 rounded-full bg-muted px-6 py-2">
               {[
                 { value: 'templates', label: 'Templates' },
                 { value: 'builder', label: 'Email Builder' },
@@ -377,7 +379,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     onClick={() => setEmailsView(value)}
                     className={cn(
                       'text-sm font-medium transition-colors duration-200',
-                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -388,7 +390,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
           </div>
         ) : isAICalling ? (
           <div className="flex items-center h-[44px]">
-            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+            <div className="flex items-center gap-8 rounded-full bg-muted px-6 py-2">
               {[
                 { value: 'scripts', label: 'Scripts' },
                 { value: 'personas', label: 'AI Personas' },
@@ -402,7 +404,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     onClick={() => setAICallingView(value)}
                     className={cn(
                       'text-sm font-medium transition-colors duration-200',
-                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -413,7 +415,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
           </div>
         ) : isWorkflows ? (
           <div className="flex items-center h-[44px]">
-            <div className="flex items-center gap-8 rounded-full bg-[#F1F5F9] px-6 py-2">
+            <div className="flex items-center gap-8 rounded-full bg-muted px-6 py-2">
               {[
                 { value: 'active', label: 'Active (3)' },
                 { value: 'paused', label: 'Paused (1)' },
@@ -427,7 +429,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     onClick={() => setWorkflowsView(value)}
                     className={cn(
                       'text-sm font-medium transition-colors duration-200',
-                      isActive ? 'text-[var(--studio-primary)]' : 'text-slate-500'
+                      isActive ? 'text-[var(--studio-primary)]' : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -443,25 +445,42 @@ export default function Header({ title, subtitle, onMenuClick }) {
         {/* RIGHT SECTION */}
         <div className="flex items-center gap-6">
 
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-[38px] w-[38px] rounded-full text-muted-foreground hover:bg-muted shrink-0"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {!themeMounted ? (
+              <Sun className="h-5 w-5 opacity-60" aria-hidden />
+            ) : theme === 'dark' ? (
+              <Sun className="h-5 w-5" aria-hidden />
+            ) : (
+              <Moon className="h-5 w-5" aria-hidden />
+            )}
+          </Button>
+
           {/* MOBILE MENU */}
           <Button
             variant="ghost"
             size="icon"
             onClick={onMenuClick}
-            className="md:hidden h-[38px] w-[38px] rounded-lg text-slate-600"
+            className="md:hidden h-[38px] w-[38px] rounded-lg text-muted-foreground"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </Button>
 
           {/* SEARCH + NOTIFICATION PILL */}
-          <div className="flex items-center h-[38px] gap-1 rounded-full bg-slate-100 px-0.5">
+          <div className="flex items-center h-[38px] gap-1 rounded-full bg-muted px-0.5">
             <div className="relative">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="h-[38px] w-[38px] rounded-full text-slate-500 hover:bg-slate-200/80"
+                className="h-[38px] w-[38px] rounded-full text-muted-foreground hover:bg-muted/80"
               >
                 <Bell className="h-5 w-5" />
               </Button>
@@ -472,13 +491,13 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowNotifications(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-80 z-50 rounded-xl border border-slate-200 bg-white shadow-xl">
-                    <div className="p-4 border-b border-slate-200">
-                      <h3 className="font-semibold text-sm text-slate-900">
+                  <div className="absolute right-0 top-full mt-2 w-80 z-50 rounded-xl border border-border bg-popover text-popover-foreground shadow-xl">
+                    <div className="p-4 border-b border-border">
+                      <h3 className="font-semibold text-sm">
                         Notifications
                       </h3>
                     </div>
-                    <div className="p-4 text-sm text-slate-500">
+                    <div className="p-4 text-sm text-muted-foreground">
                       No new notifications.
                     </div>
                   </div>
@@ -489,7 +508,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-[38px] w-[38px] rounded-full text-slate-500 hover:bg-slate-200/80"
+              className="h-[38px] w-[38px] rounded-full text-muted-foreground hover:bg-muted/80"
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -500,14 +519,14 @@ export default function Header({ title, subtitle, onMenuClick }) {
             {isSuperAdmin() ? (
               <BranchSelector />
             ) : (
-              <div className="flex items-center justify-between gap-2 h-[38px] px-3 rounded-full bg-[#F1F5F9]">
+              <div className="flex items-center justify-between gap-2 h-[38px] px-3 rounded-full bg-muted">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <MapPin className="h-5 w-5 text-[#94A3B8]" />
-                  <span className="text-sm truncate text-[#94A3B8]">
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm truncate text-muted-foreground">
                     {user?.branchName || 'All Branch'}
                   </span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-[#94A3B8]" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </div>
             )}
           </div>
@@ -517,18 +536,18 @@ export default function Header({ title, subtitle, onMenuClick }) {
             <button
               type="button"
               onClick={() => setShowProfileMenu((prev) => !prev)}
-              className="flex items-center gap-2 rounded-lg px-1 py-1.5 hover:bg-slate-100 transition-colors text-left min-w-0"
+              className="flex items-center gap-2 rounded-lg px-1 py-1.5 hover:bg-muted transition-colors text-left min-w-0"
               aria-expanded={showProfileMenu}
               aria-haspopup="true"
             >
-              <div className="h-[38px] w-[38px] rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600 shrink-0">
+              <div className="h-[38px] w-[38px] rounded-full bg-muted flex items-center justify-center text-sm font-medium text-foreground shrink-0">
                 {user ? getInitials(user.name) : '?'}
               </div>
               <div className="flex flex-col min-w-0 max-w-[140px] sm:max-w-none hidden sm:flex items-start">
-                <span className="block text-sm text-[#050312] leading-tight truncate w-full">
+                <span className="block text-sm text-foreground leading-tight truncate w-full">
                   {user ? `Hi, ${user.name}` : 'Hi, User'}
                 </span>
-                <span className="block text-xs text-[#94A3B8] leading-tight mt-1 truncate w-full">
+                <span className="block text-xs text-muted-foreground leading-tight mt-1 truncate w-full">
                   {user?.email || '—'}
                 </span>
               </div>
@@ -536,7 +555,7 @@ export default function Header({ title, subtitle, onMenuClick }) {
 
             {showProfileMenu && (
               <div
-                className="absolute right-0 top-full mt-2 w-48 z-50 rounded-lg border border-slate-200 bg-white shadow-lg py-1"
+                className="absolute right-0 top-full mt-2 w-48 z-50 rounded-lg border border-border bg-popover text-popover-foreground shadow-lg py-1"
                 role="menu"
               >
                 <button
@@ -545,10 +564,10 @@ export default function Header({ title, subtitle, onMenuClick }) {
                     setShowProfileMenu(false)
                     logout()
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
                   role="menuitem"
                 >
-                  <LogOut className="h-4 w-4 text-slate-500" />
+                  <LogOut className="h-4 w-4 text-muted-foreground" />
                   Logout
                 </button>
               </div>

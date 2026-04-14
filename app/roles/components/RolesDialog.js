@@ -190,7 +190,7 @@ export default function RolesDialog({
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
-            <p className="ml-4 text-slate-500">Loading role...</p>
+            <p className="ml-4 text-muted-foreground">Loading role...</p>
           </div>
         ) : (
           <RoleEditor

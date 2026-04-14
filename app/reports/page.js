@@ -1,6 +1,7 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout'
+import { chartGridStroke, chartAxisStroke, rechartsTooltipContentStyle } from '@/lib/chartStyles'
 import {
   AreaChart,
   Area,
@@ -73,13 +74,16 @@ const weeklyActivityData = [
 ]
 
 const chartCardClass =
-  'rounded-[20px] border-2 p-5 bg-white border-[#F1F5F9] shadow-[4px_4px_26px_rgba(65,65,65,0.06)]'
+  'rounded-[20px] border-2 p-5 bg-card border-border text-card-foreground shadow-sm'
 
 function Trend({ type = 'up', text }) {
   const isUp = type === 'up'
-  const color = isUp ? '#00AA34' : '#EF4444'
   return (
-    <div className="mt-1 flex items-center gap-1 text-[14px] font-medium" style={{ color }}>
+    <div
+      className={`mt-1 flex items-center gap-1 text-[14px] font-medium ${
+        isUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+      }`}
+    >
       <span aria-hidden>{isUp ? '↗' : '↘'}</span>
       <span>{text}</span>
     </div>
@@ -96,10 +100,7 @@ export default function ReportsPage() {
               <p className="text-base font-bold uppercase tracking-[0.02em] text-[var(--studio-primary)]">
                 {card.title}
               </p>
-              <h3
-                className="mt-1 text-[38px] font-bold leading-[1.21]"
-                style={{ background: 'linear-gradient(180deg, #6B7280 13%, #050312 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-              >
+              <h3 className="mt-1 text-[38px] font-bold leading-[1.21] bg-gradient-to-b from-muted-foreground to-foreground bg-clip-text text-transparent">
                 {card.value}
               </h3>
               <Trend type={card.trendType} text={card.trend} />
@@ -120,10 +121,10 @@ export default function ReportsPage() {
                     <stop offset="100%" stopColor="var(--side-gradient-end)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                <Tooltip />
+                <CartesianGrid stroke={chartGridStroke} vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={rechartsTooltipContentStyle} />
                 <Area type="monotone" dataKey="revenue" stroke="var(--side-gradient-end)" strokeWidth={2} fill="url(#reportRevenueFill)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -148,16 +149,16 @@ export default function ReportsPage() {
                 </div>
 
                 {/* Figma-like outside labels */}
-                <div className="absolute left-[48px] top-[20px] text-[14px] leading-[20px] text-[#64748B]">New Leads: 25%</div>
-                <div className="absolute left-[38px] top-[88px] text-[14px] leading-[20px] text-[#64748B]">Contracted: 10%</div>
-                <div className="absolute left-[66px] top-[146px] text-[14px] leading-[20px] text-[#64748B]">Qualified: 5%</div>
-                <div className="absolute right-[32px] top-[118px] text-[14px] leading-[20px] text-[#64748B]">Proposal: 40%</div>
-                <div className="absolute right-[70px] top-[20px] text-[14px] leading-[20px] text-[#64748B]">Won: 20%</div>
+                <div className="absolute left-[48px] top-[20px] text-[14px] leading-[20px] text-muted-foreground">New Leads: 25%</div>
+                <div className="absolute left-[38px] top-[88px] text-[14px] leading-[20px] text-muted-foreground">Contracted: 10%</div>
+                <div className="absolute left-[66px] top-[146px] text-[14px] leading-[20px] text-muted-foreground">Qualified: 5%</div>
+                <div className="absolute right-[32px] top-[118px] text-[14px] leading-[20px] text-muted-foreground">Proposal: 40%</div>
+                <div className="absolute right-[70px] top-[20px] text-[14px] leading-[20px] text-muted-foreground">Won: 20%</div>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 {pipelineData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2 text-sm text-[#64748B]">
+                  <div key={item.name} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="h-2 w-2 rounded-full" style={{ background: item.color }} />
                     <span>{item.name}</span>
                   </div>
@@ -171,10 +172,10 @@ export default function ReportsPage() {
             <div className="mt-4 h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={leadSourcesData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <Tooltip />
+                  <CartesianGrid stroke={chartGridStroke} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={rechartsTooltipContentStyle} />
                   <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="url(#leadBarGradient)" />
                   <defs>
                     <linearGradient id="leadBarGradient" x1="0" y1="0" x2="0" y2="1">
@@ -194,17 +195,17 @@ export default function ReportsPage() {
             <div className="mt-4 h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyActivityData} barCategoryGap={24} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                  <XAxis dataKey="day" tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: '#64748B', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <Tooltip />
+                  <CartesianGrid stroke={chartGridStroke} vertical={false} />
+                  <XAxis dataKey="day" tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fill: chartAxisStroke, fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={rechartsTooltipContentStyle} />
                   <Bar dataKey="calls" fill="var(--side-gradient-start)" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="emails" fill="#4CC9F0" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="sms" fill="var(--side-gradient-end)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 flex items-center gap-4 text-sm text-[#64748B]">
+            <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[var(--side-gradient-start)]" />Calls</span>
               <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#4CC9F0]" />Email</span>
               <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[var(--side-gradient-end)]" />SMS</span>
@@ -217,10 +218,10 @@ export default function ReportsPage() {
               {conversionFunnelData.map((stage) => (
                 <div key={stage.stage} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-900">{stage.stage}</span>
-                    <span className="text-[#64748B]">{stage.count} ({stage.percentage}%)</span>
+                    <span className="font-medium text-foreground">{stage.stage}</span>
+                    <span className="text-muted-foreground">{stage.count} ({stage.percentage}%)</span>
                   </div>
-                  <div className="h-5 w-full overflow-hidden rounded-full bg-[#EDFAFE]">
+                  <div className="h-5 w-full overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full"
                       style={{ width: `${stage.percentage}%`, background: 'var(--side-gradient-css)' }}

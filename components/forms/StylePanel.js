@@ -41,7 +41,7 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
 
   if (!field) {
     return (
-      <div className="text-center py-8 text-slate-500 text-sm">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         Select a field to edit its settings
       </div>
     )
@@ -74,13 +74,13 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
   const SectionHeader = ({ title, section }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between py-2 text-xs font-semibold text-slate-900 hover:text-slate-700"
+      className="w-full flex items-center justify-between py-2 text-xs font-semibold text-foreground hover:text-foreground/90"
     >
       <span>{title}</span>
       {expandedSections[section] ? (
-        <ChevronUp className="h-3.5 w-3.5 text-slate-500" />
+        <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
       ) : (
-        <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       )}
     </button>
   )
@@ -95,26 +95,26 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
 
       <TabsContent value="content" className="space-y-3 mt-0">
         <div className="space-y-1.5">
-          <Label className="text-xs text-slate-600 font-medium">Label</Label>
+          <Label className="text-xs text-muted-foreground font-medium">Label</Label>
           <Input
             value={field.label}
             onChange={(e) => handleFieldUpdate({ ...field, label: e.target.value })}
-            className="border-slate-200 bg-white focus:bg-white text-sm h-9"
+            className="border-border bg-background text-sm h-9"
           />
         </div>
         {field.type !== 'submit' && (
           <>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-600 font-medium">Placeholder</Label>
+              <Label className="text-xs text-muted-foreground font-medium">Placeholder</Label>
               <Input
                 value={field.placeholder}
                 onChange={(e) => handleFieldUpdate({ ...field, placeholder: e.target.value })}
-                className="border-slate-200 bg-white focus:bg-white text-sm h-9"
+                className="border-border bg-background text-sm h-9"
               />
             </div>
             {(field.type === 'select' || field.type === 'checkbox') && (
               <div className="space-y-2.5">
-                <Label className="text-xs text-slate-600 font-medium">Options</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Options</Label>
                 {(field.options || []).map((opt, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <Input
@@ -127,7 +127,7 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                         handleFieldUpdate({ ...field, options: newOptions })
                       }}
                       placeholder="Option label"
-                      className="flex-1 border-slate-200 bg-white text-sm h-9"
+                      className="flex-1 border-border bg-background text-sm h-9"
                     />
                     <button
                       type="button"
@@ -136,7 +136,7 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                         newOptions.splice(idx, 1)
                         handleFieldUpdate({ ...field, options: newOptions })
                       }}
-                      className="px-2 py-1 text-sm bg-red-50 text-red-600 rounded"
+                      className="px-2 py-1 text-sm rounded bg-destructive/10 text-destructive hover:bg-destructive/15"
                     >
                       Remove
                     </button>
@@ -151,22 +151,22 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                       newOptions.push({ label: `Option ${nextIndex}`, value: `option_${nextIndex}` })
                       handleFieldUpdate({ ...field, options: newOptions })
                     }}
-                    className="px-3 py-2 text-sm bg-slate-100 text-slate-700 rounded"
+                    className="px-3 py-2 text-sm bg-muted text-foreground rounded"
                   >
                     Add Option
                   </button>
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 pt-2 border-t border-border">
               <input
                 type="checkbox"
                 id="required"
                 checked={field.required}
                 onChange={(e) => handleFieldUpdate({ ...field, required: e.target.checked })}
-                className="text-slate-600"
+                className="text-muted-foreground"
               />
-              <Label htmlFor="required" className="text-xs text-slate-700">
+              <Label htmlFor="required" className="text-xs text-foreground">
                 Required Field
               </Label>
             </div>
@@ -176,16 +176,16 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
 
       <TabsContent value="style" className="space-y-3 mt-0">
         {/* Typography */}
-        <div className="border-b border-slate-100 pb-2">
+        <div className="border-b border-border pb-2">
           <SectionHeader title="Typography" section="typography" />
           {expandedSections.typography && (
             <div className="space-y-2.5 mt-2.5">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Font Family</Label>
+                <Label className="text-xs text-muted-foreground">Font Family</Label>
                 <Select
                   value={styles.fontFamily || 'Arial'}
                   onChange={(e) => updateStyle('fontFamily', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   {fontFamilies.map((font) => (
                     <option key={font} value={font}>
@@ -196,21 +196,21 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
-                  <Label className="text-xs text-slate-500">Font Size (px)</Label>
+                  <Label className="text-xs text-muted-foreground">Font Size (px)</Label>
                   <Input
                     type="number"
                     value={styles.fontSize ? parseFloat(styles.fontSize.replace('px', '')) : ''}
                     onChange={(e) => updateStyle('fontSize', e.target.value ? `${e.target.value}px` : '')}
                     placeholder="16"
-                    className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-slate-500">Font Weight</Label>
+                  <Label className="text-xs text-muted-foreground">Font Weight</Label>
                   <Select
                     value={styles.fontWeight || '400'}
                     onChange={(e) => updateStyle('fontWeight', e.target.value)}
-                    className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="border-border bg-muted/50 focus:bg-background text-sm"
                   >
                     {fontWeights.map((weight) => (
                       <option key={weight} value={weight}>
@@ -221,22 +221,22 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Letter Spacing (px)</Label>
+                <Label className="text-xs text-muted-foreground">Letter Spacing (px)</Label>
                 <Input
                   type="number"
                   step="0.1"
                   value={styles.letterSpacing ? parseFloat(styles.letterSpacing.replace('px', '')) : ''}
                   onChange={(e) => updateStyle('letterSpacing', e.target.value ? `${e.target.value}px` : '')}
                   placeholder="0"
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Text Align</Label>
+                <Label className="text-xs text-muted-foreground">Text Align</Label>
                 <Select
                   value={styles.textAlign || 'left'}
                   onChange={(e) => updateStyle('textAlign', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="left">Left</option>
                   <option value="center">Center</option>
@@ -245,11 +245,11 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Text Transform</Label>
+                <Label className="text-xs text-muted-foreground">Text Transform</Label>
                 <Select
                   value={styles.textTransform || 'none'}
                   onChange={(e) => updateStyle('textTransform', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="none">None</option>
                   <option value="uppercase">Uppercase</option>
@@ -262,43 +262,43 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
         </div>
 
         {/* Colors */}
-        <div className="border-b border-slate-100 pb-2">
+        <div className="border-b border-border pb-2">
           <SectionHeader title="Colors" section="colors" />
           {expandedSections.colors && (
             <div className="space-y-2.5 mt-2.5">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Text Color</Label>
+                <Label className="text-xs text-muted-foreground">Text Color</Label>
                 <div className="flex gap-2">
                   <Input
                     type="color"
                     value={styles.color || '#000000'}
                     onChange={(e) => updateStyle('color', e.target.value)}
-                    className="h-10 w-16 border-slate-200 cursor-pointer"
+                    className="h-10 w-16 border-border cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={styles.color || '#000000'}
                     onChange={(e) => updateStyle('color', e.target.value)}
                     placeholder="#000000"
-                    className="flex-1 border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="flex-1 border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Background Color</Label>
+                <Label className="text-xs text-muted-foreground">Background Color</Label>
                 <div className="flex gap-2">
                   <Input
                     type="color"
                     value={styles.backgroundColor || '#ffffff'}
                     onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                    className="h-10 w-16 border-slate-200 cursor-pointer"
+                    className="h-10 w-16 border-border cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={styles.backgroundColor || '#ffffff'}
                     onChange={(e) => updateStyle('backgroundColor', e.target.value)}
                     placeholder="#ffffff"
-                    className="flex-1 border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="flex-1 border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
               </div>
@@ -307,96 +307,96 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
         </div>
 
         {/* Spacing */}
-        <div className="border-b border-slate-100 pb-2">
+        <div className="border-b border-border pb-2">
           <SectionHeader title="Spacing" section="spacing" />
           {expandedSections.spacing && (
             <div className="space-y-2.5 mt-2.5">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Padding</Label>
+                <Label className="text-xs text-muted-foreground">Padding</Label>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Top</Label>
+                    <Label className="text-xs text-muted-foreground/70">Top</Label>
                     <Input
                       type="number"
                       value={styles.paddingTop ? parseFloat(styles.paddingTop.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('paddingTop', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Right</Label>
+                    <Label className="text-xs text-muted-foreground/70">Right</Label>
                     <Input
                       type="number"
                       value={styles.paddingRight ? parseFloat(styles.paddingRight.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('paddingRight', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Bottom</Label>
+                    <Label className="text-xs text-muted-foreground/70">Bottom</Label>
                     <Input
                       type="number"
                       value={styles.paddingBottom ? parseFloat(styles.paddingBottom.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('paddingBottom', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Left</Label>
+                    <Label className="text-xs text-muted-foreground/70">Left</Label>
                     <Input
                       type="number"
                       value={styles.paddingLeft ? parseFloat(styles.paddingLeft.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('paddingLeft', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Margin</Label>
+                <Label className="text-xs text-muted-foreground">Margin</Label>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Top</Label>
+                    <Label className="text-xs text-muted-foreground/70">Top</Label>
                     <Input
                       type="number"
                       value={styles.marginTop ? parseFloat(styles.marginTop.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('marginTop', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Right</Label>
+                    <Label className="text-xs text-muted-foreground/70">Right</Label>
                     <Input
                       type="number"
                       value={styles.marginRight ? parseFloat(styles.marginRight.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('marginRight', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Bottom</Label>
+                    <Label className="text-xs text-muted-foreground/70">Bottom</Label>
                     <Input
                       type="number"
                       value={styles.marginBottom ? parseFloat(styles.marginBottom.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('marginBottom', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Left</Label>
+                    <Label className="text-xs text-muted-foreground/70">Left</Label>
                     <Input
                       type="number"
                       value={styles.marginLeft ? parseFloat(styles.marginLeft.replace('px', '')) : ''}
                       onChange={(e) => updateStyle('marginLeft', e.target.value ? `${e.target.value}px` : '')}
                       placeholder="0"
-                      className="border-slate-200 bg-slate-50 focus:bg-white text-xs"
+                      className="border-border bg-muted/50 focus:bg-background text-xs"
                     />
                   </div>
                 </div>
@@ -406,38 +406,38 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
         </div>
 
         {/* Border */}
-        <div className="border-b border-slate-100 pb-2">
+        <div className="border-b border-border pb-2">
           <SectionHeader title="Border" section="border" />
           {expandedSections.border && (
             <div className="space-y-2.5 mt-2.5">
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
-                  <Label className="text-xs text-slate-500">Border Width (px)</Label>
+                  <Label className="text-xs text-muted-foreground">Border Width (px)</Label>
                   <Input
                     type="number"
                     value={styles.borderWidth ? parseFloat(styles.borderWidth.replace('px', '')) : ''}
                     onChange={(e) => updateStyle('borderWidth', e.target.value ? `${e.target.value}px` : '')}
                     placeholder="1"
-                    className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs text-slate-500">Border Radius (px)</Label>
+                  <Label className="text-xs text-muted-foreground">Border Radius (px)</Label>
                   <Input
                     type="number"
                     value={styles.borderRadius ? parseFloat(styles.borderRadius.replace('px', '')) : ''}
                     onChange={(e) => updateStyle('borderRadius', e.target.value ? `${e.target.value}px` : '')}
                     placeholder="4"
-                    className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Border Style</Label>
+                <Label className="text-xs text-muted-foreground">Border Style</Label>
                 <Select
                   value={styles.borderStyle || 'solid'}
                   onChange={(e) => updateStyle('borderStyle', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="none">None</option>
                   <option value="solid">Solid</option>
@@ -447,20 +447,20 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Border Color</Label>
+                <Label className="text-xs text-muted-foreground">Border Color</Label>
                 <div className="flex gap-2">
                   <Input
                     type="color"
                     value={styles.borderColor || '#e2e8f0'}
                     onChange={(e) => updateStyle('borderColor', e.target.value)}
-                    className="h-10 w-16 border-slate-200 cursor-pointer"
+                    className="h-10 w-16 border-border cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={styles.borderColor || '#e2e8f0'}
                     onChange={(e) => updateStyle('borderColor', e.target.value)}
                     placeholder="#e2e8f0"
-                    className="flex-1 border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                    className="flex-1 border-border bg-muted/50 focus:bg-background text-sm"
                   />
                 </div>
               </div>
@@ -470,16 +470,16 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
       </TabsContent>
 
       <TabsContent value="layout" className="space-y-3 mt-0">
-        <div className="border-b border-slate-100 pb-2">
+        <div className="border-b border-border pb-2">
           <SectionHeader title="Layout" section="layout" />
           {expandedSections.layout && (
             <div className="space-y-2.5 mt-2.5">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Width</Label>
+                <Label className="text-xs text-muted-foreground">Width</Label>
                 <Select
                   value={styles.width || '100%'}
                   onChange={(e) => updateStyle('width', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="auto">Auto</option>
                   <option value="100%">100%</option>
@@ -489,11 +489,11 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Display</Label>
+                <Label className="text-xs text-muted-foreground">Display</Label>
                 <Select
                   value={styles.display || 'block'}
                   onChange={(e) => updateStyle('display', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="block">Block</option>
                   <option value="inline-block">Inline Block</option>
@@ -502,11 +502,11 @@ export default function StylePanel({ field, onStyleChange, onFieldUpdate }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Position</Label>
+                <Label className="text-xs text-muted-foreground">Position</Label>
                 <Select
                   value={styles.position || 'static'}
                   onChange={(e) => updateStyle('position', e.target.value)}
-                  className="border-slate-200 bg-slate-50 focus:bg-white text-sm"
+                  className="border-border bg-muted/50 focus:bg-background text-sm"
                 >
                   <option value="static">Static</option>
                   <option value="relative">Relative</option>

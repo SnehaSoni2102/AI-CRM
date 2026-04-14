@@ -119,10 +119,10 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
           <div className="space-y-6 mt-6">
             {/* Basic Information Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Basic Information</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Full Name *</label>
                   <Input 
                     value={editingUser.name || ''} 
                     onChange={(e) => setEditingUser((p) => ({ ...p, name: e.target.value }))} 
@@ -131,7 +131,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email Address *</label>
                   <Input 
                     value={editingUser.email || ''} 
                     onChange={(e) => setEditingUser((p) => ({ ...p, email: e.target.value }))} 
@@ -143,7 +143,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Phone Number</label>
                   <Input 
                     value={editingUser.phoneNumber || ''} 
                     onChange={(e) => setEditingUser((p) => ({ ...p, phoneNumber: e.target.value }))} 
@@ -151,7 +151,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Role *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Role *</label>
                   <RoleSelector
                     value={editingUser.role}
                     onChange={(role) => setEditingUser((p) => ({ ...p, role }))}
@@ -163,9 +163,9 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
 
             {/* Account Settings Section */}
             <div className="space-y-4 pt-4 border-t border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Account Settings</h3>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Account Settings</h3>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Location</label>
                 <LocationSelector
                   multiple={true}
                   value={editingUser.locationID}
@@ -176,7 +176,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
               </div>
               {mode === 'create' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Password *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Password *</label>
                   <Input 
                     value={editingUser.password || ''} 
                     onChange={(e) => setEditingUser((p) => ({ ...p, password: e.target.value }))} 
@@ -187,7 +187,7 @@ export default function UsersDialog({ open, onClose, users = [], onRefresh, init
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Status</label>
                 <StatusSelector
                   value={editingUser.status || 'active'}
                   onChange={(status) => setEditingUser((p) => ({ ...p, status }))}

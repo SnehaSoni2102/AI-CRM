@@ -422,8 +422,8 @@ function FormsPageInner() {
   const COUNTRY_COLORS = [
     'var(--studio-primary)',
     'var(--studio-gradient)',
-    'hsl(var(--primary))',
-    'hsl(var(--ring))',
+    'var(--side-gradient-end)',
+    'var(--side-gradient-start)',
     'hsl(var(--destructive))',
     'hsl(var(--foreground) / 0.85)',
     'hsl(var(--foreground) / 0.65)',

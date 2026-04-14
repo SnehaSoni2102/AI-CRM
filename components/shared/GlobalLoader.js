@@ -46,7 +46,7 @@ function resolveBlobCssVar(size, variant) {
 }
 
 const blobShadow =
-  '0 10px 28px -8px hsl(var(--primary) / 0.35), 0 4px 12px -4px hsl(var(--primary) / 0.18), inset 0 1px 0 0 rgba(255,255,255,0.35)'
+  '0 10px 28px -8px rgb(var(--studio-primary-rgb) / 0.35), 0 4px 12px -4px rgb(var(--studio-primary-rgb) / 0.18), inset 0 1px 0 0 rgba(255,255,255,0.35)'
 
 /**
  * Liquid blob loader (split / merge + trail), themed to studio primary / gradient.
@@ -80,7 +80,7 @@ export default function GlobalLoader({
         className={cn(
           'global-loader-ambient pointer-events-none absolute left-1/2 top-1/2 z-0 block rounded-[45%]',
           'h-[130%] min-h-[20px] w-[90%] min-w-[24px]',
-          'bg-[radial-gradient(ellipse_72%_55%_at_50%_48%,hsl(var(--primary)/0.28),transparent_72%)]',
+          'bg-[radial-gradient(ellipse_72%_55%_at_50%_48%,rgb(var(--studio-primary-rgb)/0.28),transparent_72%)]',
           'blur-md motion-reduce:!animate-none'
         )}
         aria-hidden
@@ -91,7 +91,7 @@ export default function GlobalLoader({
         className={cn(
           'global-loader-blob1 absolute z-[2] overflow-hidden rounded-full',
           'ring-1 ring-white/25 ring-inset',
-          'bg-gradient-to-br from-[var(--studio-primary)] via-[hsl(var(--primary))] to-[var(--studio-gradient)]'
+          'bg-gradient-to-br from-[var(--studio-primary)] via-primary to-[var(--studio-gradient)]'
         )}
         style={{
           width: 'calc(var(--gl-blob-size) * 0.8)',
@@ -110,7 +110,7 @@ export default function GlobalLoader({
         className={cn(
           'global-loader-blob2 absolute z-[2] overflow-hidden rounded-full',
           'ring-1 ring-white/20 ring-inset',
-          'bg-gradient-to-tl from-[var(--studio-gradient)] via-[hsl(var(--primary))] to-[var(--studio-primary)]'
+          'bg-gradient-to-tl from-[var(--studio-gradient)] via-primary to-[var(--studio-primary)]'
         )}
         style={{
           width: 'calc(var(--gl-blob-size) * 0.6)',
@@ -121,7 +121,7 @@ export default function GlobalLoader({
         }}
       >
         <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-[var(--studio-primary)]/[0.12] mix-blend-soft-light" />
-        <span className="pointer-events-none absolute -right-[15%] bottom-0 h-[55%] w-[55%] rounded-full bg-[var(--studio-primary-light)]/40 blur-md" />
+        <span className="pointer-events-none absolute -right-[15%] bottom-0 h-[55%] w-[55%] rounded-full bg-brand-light/40 blur-md" />
       </div>
 
       {/* Connecting energy */}

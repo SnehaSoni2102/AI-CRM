@@ -5,10 +5,10 @@
  */
 export const CARD = {
   fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
-  background: '#FFFFFF',
+  background: 'hsl(var(--card))',
   borderRadius: 10,
-  border: '1px solid #F1F5F9',
-  boxShadow: '0px 1px 3px 0px rgba(16, 24, 40, 0.08)',
+  border: '1px solid hsl(var(--border))',
+  boxShadow: '0px 1px 3px 0px hsl(var(--foreground) / 0.08)',
 }
 
 /** Card title – 16px bold, dark grey (all 4 cards) */
@@ -17,7 +17,7 @@ export const LABEL = {
   fontWeight: 700,
   fontSize: 16,
   lineHeight: 1.45,
-  color: '#374151',
+  color: 'hsl(var(--muted-foreground))',
   textTransform: 'uppercase',
   letterSpacing: '0.04em',
 }
@@ -35,7 +35,7 @@ export const VALUE_DARK = {
   fontSize: 45,
   lineHeight: 1.2,
   marginTop: 8,
-  color: '#0F172A',
+  color: 'hsl(var(--foreground))',
 }
 
 export const TREND_POSITIVE = {

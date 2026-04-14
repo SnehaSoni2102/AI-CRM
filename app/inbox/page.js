@@ -408,7 +408,7 @@ function InboxPageContent() {
   if (error) {
     return (
       <MainLayout title="Inbox" subtitle="Manage all your conversations in one place">
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] gap-3 text-slate-500">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] gap-3 text-muted-foreground">
           <p>{error}</p>
           <button onClick={fetchInboxData} className="text-sm underline">Retry</button>
         </div>

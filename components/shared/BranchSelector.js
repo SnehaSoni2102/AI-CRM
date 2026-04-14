@@ -55,27 +55,27 @@ export default function BranchSelector() {
   return (
     <div className="relative w-full">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between gap-2 w-full h-[38px] px-3 rounded-[32px] bg-[#F1F5F9] hover:bg-slate-200/80 transition-colors text-sm font-normal"
-        style={{ color: '#94A3B8' }}
+        className="flex items-center justify-between gap-2 w-full h-[38px] px-3 rounded-[32px] bg-muted hover:bg-muted/80 transition-colors text-sm font-normal text-muted-foreground"
       >
         <div className="flex items-center gap-1 min-w-0">
-          <MapPin className="h-5 w-5 shrink-0 text-[#94A3B8]" />
+          <MapPin className="h-5 w-5 shrink-0 text-muted-foreground" />
           <span className="truncate">{selectedBranch ? selectedBranch.name : 'All Branch'}</span>
         </div>
-        <ChevronDown className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-2 w-72 z-50 rounded-xl border border-slate-200 bg-white shadow-xl max-h-96 overflow-hidden animate-scale-in">
-            <div className="p-3 border-b border-slate-200">
+          <div className="absolute top-full left-0 mt-2 w-72 z-50 rounded-xl border border-border bg-popover text-popover-foreground shadow-xl max-h-96 overflow-hidden animate-scale-in">
+            <div className="p-3 border-b border-border">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search branches..."
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="max-h-80 overflow-y-auto scrollbar-hide p-2">
@@ -84,8 +84,8 @@ export default function BranchSelector() {
                 className={cn(
                   'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors',
                   !selected 
-                    ? 'bg-brand text-white' 
-                    : 'hover:bg-slate-50 text-slate-700'
+                    ? 'bg-brand text-brand-foreground' 
+                    : 'hover:bg-muted text-foreground'
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -95,14 +95,14 @@ export default function BranchSelector() {
                 {!selected && <Check className="h-4 w-4" />}
               </button>
 
-              <div className="my-2 h-px bg-slate-200" />
+              <div className="my-2 h-px bg-border" />
 
               {loading ? (
-                <div className="px-3 py-4 text-sm text-center text-slate-500">
+                <div className="px-3 py-4 text-sm text-center text-muted-foreground">
                   Loading branches...
                 </div>
               ) : filteredBranches.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-center text-slate-500">
+                <div className="px-3 py-4 text-sm text-center text-muted-foreground">
                   {query ? 'No branches found' : 'No branches available'}
                 </div>
               ) : (
@@ -113,14 +113,14 @@ export default function BranchSelector() {
                     className={cn(
                       'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors mb-1',
                       selected === branch._id 
-                        ? 'bg-brand text-white' 
-                        : 'hover:bg-slate-50 text-slate-700'
+                        ? 'bg-brand text-brand-foreground' 
+                        : 'hover:bg-muted text-foreground'
                     )}
                   >
                     <div className="flex flex-col items-start">
                       <span className="font-medium text-sm">{branch.name}</span>
                       {(branch.city || branch.state) && (
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-muted-foreground">
                           {branch.city && branch.state 
                             ? `${branch.city}, ${branch.state}` 
                             : branch.city || branch.state}
