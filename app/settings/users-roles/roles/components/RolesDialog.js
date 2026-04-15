@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import RoleEditor from '@/app/roles/components/RoleEditor'
+import RoleEditor from './RoleEditor'
 import LoadingSpinner from '@/components/shared/LoadingSpinner'
 import { getToken } from '@/lib/auth'
 import { useToast } from '@/components/ui/toast'

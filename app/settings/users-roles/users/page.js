@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import UsersDialog from '@/app/users/components/UsersDialog'
+import UsersDialog from './components/UsersDialog'
 import { getCurrentUser } from '@/lib/auth'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'

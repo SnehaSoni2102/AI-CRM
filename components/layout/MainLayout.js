@@ -22,7 +22,7 @@ export default function MainLayout({ children, title, subtitle }) {
     setIsAuth(authenticated)
 
     if (!authenticated) {
-      router.push('/login')
+      router.push('/auth/login')
       return
     }
 
@@ -54,10 +54,14 @@ export default function MainLayout({ children, title, subtitle }) {
           <Header 
             title={title} 
             subtitle={subtitle} 
-            onMenuClick={() => setMobileMenuOpen(true)} 
+            mobileMenuOpen={mobileMenuOpen}
+            onMenuClick={() => setMobileMenuOpen((prev) => !prev)} 
           />
         </Suspense>
-        <main className="flex-1 min-h-0 overflow-y-auto scrollbar-hide bg-background p-1 md:px-2 md:py-5" key={branchVersion}>
+        <main
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide bg-background px-3 py-3 sm:px-4 sm:py-4 lg:px-2"
+          key={branchVersion}
+        >
           {children}
         </main>
       </div>

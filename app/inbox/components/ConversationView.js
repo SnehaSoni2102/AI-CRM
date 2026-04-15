@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { getInitials, formatDateTime } from '@/lib/utils'
 import MessageInput from './MessageInput'
+import ConversationChannelTabs from './ConversationChannelTabs'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -74,22 +75,7 @@ export default function ConversationView({
         </div>
 
         {/* Channel tabs */}
-        <div className="mt-3 flex items-center gap-2 text-xs">
-          {['All', 'E-mail', 'SMS', 'Call'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                'px-3 py-1 rounded-md text-sm transition-colors',
-                activeTab === tab
-                  ? 'bg-[color:var(--studio-primary-light)] dark:bg-primary/15 text-[color:var(--studio-primary)]'
-                  : 'text-muted-foreground hover:bg-muted'
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <ConversationChannelTabs activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       {/* Messages */}

@@ -4,14 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getCurrentUser } from '@/lib/auth'
 import { canAccessRoute } from '@/lib/permissions'
 import { upcomingTasks as sidebarUpcomingTasks } from '@/data/dummyData'
 
 const navItems = [
-  { name: 'Dashboard', href: '/', iconSrc: '/figma/sidebar/dashboard-selected.svg', iconSize: 24, labelStyle: 'bold' },
+  { name: 'Dashboard', href: '/dashboard', iconSrc: '/figma/sidebar/dashboard-selected.svg', iconSize: 24, labelStyle: 'bold' },
   {
     name: 'Inbox',
     href: '/inbox',
@@ -19,53 +18,52 @@ const navItems = [
     iconSize: 20,
     labelStyle: 'regular',
     children: [
-      { name: 'All Messages', href: '/inbox' },
-      { name: 'Human Queue', href: '/human-queue' },
-      { name: 'Calls', href: '/inbox?channel=Call' },
+      { name: 'All Messages', href: '/inbox/all-messages' },
+      { name: 'Human Queue', href: '/inbox/human-queue' },
+      { name: 'Calls', href: '/inbox/calls' },
     ],
   },
   { name: 'Leads', href: '/leads', iconSrc: '/figma/sidebar/leads.svg', iconSize: 20, labelStyle: 'regular' },
   { name: 'Calendar', href: '/calendar', iconSrc: '/figma/sidebar/calendar.svg', iconSize: 20, labelStyle: 'regular' },
   {
     name: 'Marketing',
-    href: '/forms',
+    href: '/marketing/form-builder',
     iconSrc: '/figma/sidebar/marketing.svg',
     iconSize: 20,
     labelStyle: 'regular14',
     children: [
-      { name: 'Forms', href: '/forms' },
-      { name: 'Campaigns', href: '/campaigns' },
-      { name: 'Email Builder', href: '/emails' },
-      { name: 'SMS Builder', href: '/sms' },
+      { name: 'Form Builder', href: '/marketing/form-builder' },
+      { name: 'Campaigns', href: '/marketing/campaigns' },
+      { name: 'Email Builder', href: '/marketing/email-builder' },
+      { name: 'SMS Builder', href: '/marketing/sms-builder' },
     ],
   },
   { name: 'Reports', href: '/reports', iconSrc: '/figma/sidebar/reports.svg', iconSize: 20, labelStyle: 'regular' },
   {
     name: 'AI & Automation',
-    href: '/workflows',
+    href: '/ai-automation/workflows',
     iconSrc: '/figma/sidebar/ai-automation.svg',
     iconSize: 20,
     labelStyle: 'regular',
     children: [
-      { name: 'Make Calls', href: '/make-calls' },
-      { name: 'AI Calling', href: '/ai-calling' },
-      { name: 'Workflows', href: '/workflows' },
-      { name: 'AI Calls Data', href: '/aiCallDetail' },
-      { name: 'Training', href: '/training' },
+      { name: 'Make Calls', href: '/ai-automation/make-calls' },
+      { name: 'AI Calling', href: '/ai-automation/ai-calling' },
+      { name: 'Workflows', href: '/ai-automation/workflows' },
+      { name: 'AI Calls Data', href: '/ai-automation/ai-calling-data' },
+      { name: 'Training', href: '/ai-automation/training' },
     ],
   },
   {
     name: 'Settings',
-    href: '/settings',
+    href: '/settings/studio',
     iconSrc: '/figma/sidebar/settings.svg',
     iconSize: 20,
     labelStyle: 'regular',
     children: [
-      { name: 'Studio Locations', href: '/locations' },
-      { name: 'Users', href: '/users' },
-      { name: 'Roles & Permissions', href: '/roles' },
-      { name: 'Integrations', href: '/integrations' },
-      { name: 'Billing', href: '/billing' },
+      { name: 'Studio', href: '/settings/studio' },
+      { name: 'Users & Roles', href: '/settings/users-roles' },
+      { name: 'Integrations', href: '/settings/integrations' },
+      { name: 'Billing', href: '/settings/billing' },
     ],
   },
 ]
@@ -195,7 +193,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
     <>
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -206,9 +204,9 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         ref={sidebarRef}
         className={cn(
           'flex flex-col h-screen transition-all duration-300 justify-between items-center',
-          'md:relative fixed inset-y-0 left-0 z-50',
+          'lg:relative fixed inset-y-0 left-0 z-50',
           'w-[136px] min-w-[136px]',
-          mobileOpen ? 'flex translate-x-0' : 'hidden md:flex -translate-x-full md:translate-x-0',
+          mobileOpen ? 'flex translate-x-0' : 'hidden lg:flex -translate-x-full lg:translate-x-0',
           'bg-sidebar-gradient rounded-r-[40px]'
         )}
         style={{ padding: '24px 12px' }}
@@ -265,13 +263,14 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                     <button
                       type="button"
                       onClick={(e) => {
-                        // Parent with submenu should not navigate; only open/toggle list.
+                        // Parent with submenu should not navigate; open/toggle popup list.
                         e.preventDefault()
+                        const anchorEl = e.currentTarget
                         if (mobileOpen) {
                           setOpenMenu((prev) => {
                             const next = prev === item.name ? null : item.name
                             if (next) {
-                              setMenuAnchorRect(e.currentTarget.getBoundingClientRect())
+                              setMenuAnchorRect(anchorEl.getBoundingClientRect())
                               setMenuPos(null)
                             } else {
                               setMenuAnchorRect(null)
@@ -427,16 +426,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         )
       })()}
 
-      {/* Mobile close button - absolute so it doesn't affect layout */}
-      {mobileOpen && (
-        <button
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close menu"
-          className="md:hidden fixed top-6 left-[228px] z-[60] p-2 rounded-lg border border-border bg-background/95 text-foreground shadow-lg backdrop-blur-sm"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      )}
     </>
   )
 }

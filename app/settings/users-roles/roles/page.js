@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table'
 import api from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
-import RolesDialog from '@/app/roles/components/RolesDialog'
+import RolesDialog from './components/RolesDialog'
 import { cn } from '@/lib/utils'
 
 function formatDate(value) {

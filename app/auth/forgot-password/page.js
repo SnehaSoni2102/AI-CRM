@@ -40,19 +40,19 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center bg-white py-12 px-6">
+    <div className="h-screen flex items-center justify-center bg-background py-12 px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="mx-auto h-10 w-10 rounded-lg bg-brand flex items-center justify-center mb-3">
+          <div className="mx-auto h-10 w-10 rounded-lg bg-[var(--studio-primary)] flex items-center justify-center mb-3">
             <span className="text-white font-medium">DA</span>
           </div>
-          <h2 className="text-2xl font-semibold text-slate-900">Forgot password</h2>
-          <p className="text-sm text-slate-500 mt-1">Enter your email and we'll send you instructions to reset your password.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Forgot password</h2>
+          <p className="text-sm text-muted-foreground mt-1">Enter your email and we'll send you instructions to reset your password.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="text-sm text-slate-700 block mb-1">Email</Label>
+            <Label htmlFor="email" className="text-sm text-foreground block mb-1">Email</Label>
             <Input
               id="email"
               type="email"
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
           )}
 
           {message && (
-            <div className="p-3 text-sm text-teal-800 bg-teal-50 border border-teal-100 rounded-lg">
+            <div className="p-3 text-sm text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-lg">
               {message}
             </div>
           )}
@@ -82,9 +82,9 @@ export default function ForgotPasswordPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-slate-600 text-sm">
+          <p className="text-muted-foreground text-sm">
             Remembered your password?{' '}
-            <a href="/login" className="text-teal-600 hover:text-teal-700 font-semibold hover:underline">
+            <a href="/auth/login" className="text-[var(--studio-primary)] font-semibold hover:underline">
               Sign in
             </a>
           </p>
