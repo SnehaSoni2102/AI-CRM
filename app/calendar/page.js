@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -8,19 +8,28 @@ import interactionPlugin from '@fullcalendar/interaction'
 import MainLayout from '@/components/layout/MainLayout'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import AppointmentComposerPanel from './components/AppointmentComposerPanel'
+import EventDetailPanel from './components/EventDetailPanel'
+import api from '@/lib/api'
 
 const COLORS = {
   border: 'hsl(var(--border))',
   shadow: '0px 2px 5px 0px hsl(var(--foreground) / 0.06)',
 }
 
-const TUTORS = [
-  { key: 't-1', initials: 'RG', name: 'Rachel Green', color: 'var(--calendar-palette-1)' },
-  { key: 't-2', initials: 'AS', name: 'Ariana Shah', color: 'var(--calendar-palette-2)' },
-  { key: 't-3', initials: 'VK', name: 'Vikram Khanna', color: 'var(--calendar-palette-3)' },
-  { key: 't-4', initials: 'NP', name: 'Neha Patel', color: 'var(--calendar-palette-4)' },
-  { key: 't-5', initials: 'SM', name: 'Sana Malik', color: 'var(--calendar-palette-5)' },
+// Visually distinct hues — works on both light and dark backgrounds
+const CALENDAR_PALETTE = [
+  '#6366f1', // indigo
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#3b82f6', // blue
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#f97316', // orange
+  '#8b5cf6', // violet
+  '#06b6d4', // cyan
+  '#ef4444', // red
 ]
+
 
 const VIEW_MODE = { DAY: 'day', WEEK: 'week', MONTH: 'month' }
 const FULLCALENDAR_VIEW = {
@@ -33,25 +42,9 @@ const DAY_END_HOUR = 22
 const DAY_ROW_HEIGHT = 64
 const DAY_LEFT_RAIL_WIDTH = 86
 
-const CLASS_TITLES = [
-  'Ballet Basics',
-  'Hip Hop Juniors',
-  'Yoga Flow',
-  'Contemporary Lab',
-  'Piano Beginner',
-  'Guitar Practice',
-  'Math Support',
-]
-
 function addDays(date, days) {
   const next = new Date(date)
   next.setDate(next.getDate() + days)
-  return next
-}
-
-function setTime(date, hours, minutes = 0) {
-  const next = new Date(date)
-  next.setHours(hours, minutes, 0, 0)
   return next
 }
 
@@ -59,14 +52,6 @@ function mapViewTypeToMode(viewType) {
   if (viewType === 'timeGridDay') return VIEW_MODE.DAY
   if (viewType === 'timeGridWeek') return VIEW_MODE.WEEK
   return VIEW_MODE.MONTH
-}
-
-function getDateSeed(date) {
-  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate()
-}
-
-function dateKey(date) {
-  return date.toISOString().slice(0, 10)
 }
 
 function isSameDate(a, b) {
@@ -106,125 +91,65 @@ function formatHeaderLabel(date, mode) {
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
-function buildMockEvents(rangeStart, rangeEnd) {
-  const items = []
-  let cursor = new Date(rangeStart)
-  cursor.setHours(0, 0, 0, 0)
 
-  while (cursor <= rangeEnd) {
-    const seed = getDateSeed(cursor)
-    const dailyCount = 1 + (seed % 2) // 10..17/day to stress test
-
-    for (let i = 0; i < dailyCount; i++) {
-      const tutor = TUTORS[(seed + i) % TUTORS.length]
-      const startHour = 6 + ((seed + i * 3) % 15) // 6..20
-      const startMinute = [0, 15, 30, 45][(seed + i) % 4]
-      const durationMin = [30, 45, 60, 75, 90, 120][(seed + i * 2) % 6]
-      const start = setTime(cursor, startHour, startMinute)
-      const end = new Date(start.getTime() + durationMin * 60000)
-      if (end.getHours() > 22) continue
-
-      items.push({
-        id: `${dateKey(cursor)}-${i}`,
-        title: CLASS_TITLES[(seed + i * 3) % CLASS_TITLES.length],
-        tutorKey: tutor.key,
-        tutorName: tutor.name,
-        start,
-        end,
-        allDay: false,
-      })
+function deriveInstructors(appointments) {
+  const seen = {}
+  let colorIdx = 0
+  appointments.forEach((appt) => {
+    const id = String(appt.teacherID?._id || appt.teacherID || '')
+    const name = appt.teacherID?.name || ''
+    if (id && id !== 'undefined' && !seen[id]) {
+      const parts = name.trim().split(/\s+/)
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : (name.slice(0, 2) || '??').toUpperCase()
+      seen[id] = {
+        key: id,
+        initials,
+        name,
+        color: CALENDAR_PALETTE[colorIdx % CALENDAR_PALETTE.length],
+      }
+      colorIdx += 1
     }
+  })
+  return Object.values(seen)
+}
 
-    // Exact overlap, different instructors.
-    TUTORS.slice(0, 4).forEach((tutor, idx) => {
-      items.push({
-        id: `${dateKey(cursor)}-hard-overlap-${idx}`,
-        title: `Peak Slot ${idx + 1}`,
-        tutorKey: tutor.key,
-        tutorName: tutor.name,
-        start: setTime(cursor, 13, 0),
-        end: setTime(cursor, 14, 0),
-        allDay: false,
-      })
-    })
+function buildColorMap(instructors) {
+  const map = {}
+  instructors.forEach((inst) => { map[inst.key] = inst.color })
+  return map
+}
 
-    // Partial overlap chain.
-    TUTORS.slice(1, 4).forEach((tutor, idx) => {
-      const start = setTime(cursor, 13, 15 + idx * 15)
-      const end = new Date(start.getTime() + 45 * 60000)
-      items.push({
-        id: `${dateKey(cursor)}-stagger-${idx}`,
-        title: `Staggered Session ${idx + 1}`,
-        tutorKey: tutor.key,
-        tutorName: tutor.name,
-        start,
-        end,
-        allDay: false,
-      })
-    })
+function transformAppointments(appointments, colorMap) {
+  return appointments.map((appt) => {
+    const teacherId = String(appt.teacherID?._id || appt.teacherID || 'unknown')
+    const teacherName = appt.teacherID?.name || ''
+    const color = colorMap?.[teacherId] || CALENDAR_PALETTE[0]
 
-    // Back-to-back for one instructor.
-    const backToBackTutor = TUTORS[seed % TUTORS.length]
-    for (let j = 0; j < 3; j++) {
-      items.push({
-        id: `${dateKey(cursor)}-b2b-${j}`,
-        title: `Back to Back ${j + 1}`,
-        tutorKey: backToBackTutor.key,
-        tutorName: backToBackTutor.name,
-        start: setTime(cursor, 15 + j, 0),
-        end: setTime(cursor, 15 + j, 45),
-        allDay: false,
-      })
+    const start = new Date(appt.startDateTime)
+    const end = new Date(appt.endDateTime)
+    const isAllDay = Boolean(appt.allDay)
+    const isCancelled = appt.status === 'cancelled'
+
+    return {
+      id: String(appt._id || appt.id),
+      title: appt.title || 'Event',
+      start,
+      end,
+      allDay: isAllDay,
+      backgroundColor: isAllDay ? 'var(--studio-primary)' : 'transparent',
+      borderColor: 'transparent',
+      textColor: isAllDay ? 'rgb(var(--studio-on-primary-rgb))' : 'inherit',
+      extendedProps: {
+        tutorName: teacherName,
+        tutorKey: teacherId,
+        status: appt.status,
+        color: isCancelled ? 'hsl(var(--muted-foreground))' : color,
+        raw: appt,
+      },
     }
-
-    // Short and long session edges.
-    items.push({
-      id: `${dateKey(cursor)}-short`,
-      title: 'Quick Assessment',
-      tutorKey: TUTORS[(seed + 2) % TUTORS.length].key,
-      tutorName: TUTORS[(seed + 2) % TUTORS.length].name,
-      start: setTime(cursor, 9, 45),
-      end: setTime(cursor, 10, 0),
-      allDay: false,
-    })
-    items.push({
-      id: `${dateKey(cursor)}-long`,
-      title: 'Workshop Block',
-      tutorKey: TUTORS[(seed + 3) % TUTORS.length].key,
-      tutorName: TUTORS[(seed + 3) % TUTORS.length].name,
-      start: setTime(cursor, 16, 0),
-      end: setTime(cursor, 19, 0),
-      allDay: false,
-    })
-
-    // Frequent all-day events.
-    if (seed % 2 === 0) {
-      items.push({
-        id: `${dateKey(cursor)}-all-1`,
-        title: 'Holiday Batch',
-        tutorKey: TUTORS[seed % TUTORS.length].key,
-        tutorName: TUTORS[seed % TUTORS.length].name,
-        start: setTime(cursor, 0, 0),
-        end: setTime(cursor, 23, 59),
-        allDay: true,
-      })
-    }
-    if (seed % 3 === 0) {
-      items.push({
-        id: `${dateKey(cursor)}-all-2`,
-        title: 'Special Camp',
-        tutorKey: TUTORS[(seed + 1) % TUTORS.length].key,
-        tutorName: TUTORS[(seed + 1) % TUTORS.length].name,
-        start: setTime(cursor, 0, 0),
-        end: setTime(cursor, 23, 59),
-        allDay: true,
-      })
-    }
-
-    cursor = addDays(cursor, 1)
-  }
-
-  return items
+  })
 }
 
 function SegmentedButton({ active, children, className, onClick }) {
@@ -272,10 +197,52 @@ function SmallRoundedButton({ children, onClick }) {
 }
 
 function renderEventContent(info) {
+  const { tutorName, status, color } = info.event.extendedProps || {}
+  const cancelled = status === 'cancelled'
+  const accentColor = color || 'var(--studio-primary)'
+
+  if (info.event.allDay) {
+    return (
+      <div className="h-full w-full px-2 py-0.5 flex items-center rounded text-[10px] font-semibold truncate"
+        style={{ backgroundColor: 'var(--studio-primary)', color: 'rgb(var(--studio-on-primary-rgb))' }}>
+        {info.event.title}
+      </div>
+    )
+  }
+
+  const start = info.event.start
+  const timeLabel = start
+    ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    : ''
+  const initials = (tutorName || '').split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+
   return (
-    <div className="text-[10px] leading-tight">
-      <div className="truncate font-semibold">{info.event.title}</div>
-      <div className="truncate opacity-90">{info.event.extendedProps?.tutorName}</div>
+    <div
+      className={`h-full w-full overflow-hidden rounded-[5px] flex flex-col ${cancelled ? 'opacity-50' : ''}`}
+      style={{
+        borderLeft: `3px solid ${accentColor}`,
+        backgroundColor: `color-mix(in srgb, ${accentColor} 28%, hsl(var(--card)))`,
+      }}
+    >
+      <div className="px-1.5 py-1 flex flex-col gap-0.5 overflow-hidden">
+        <div className={`text-[10px] font-bold text-foreground leading-tight truncate ${cancelled ? 'line-through' : ''}`}>
+          {info.event.title}
+        </div>
+        {timeLabel && (
+          <div className="text-[9px] text-muted-foreground leading-none">{timeLabel}</div>
+        )}
+        {tutorName && (
+          <div className="flex items-center gap-1">
+            <span
+              className="h-3 w-3 rounded-full text-[7px] font-bold grid place-items-center text-white shrink-0"
+              style={{ backgroundColor: accentColor }}
+            >
+              {initials.charAt(0)}
+            </span>
+            <span className="text-[8px] text-muted-foreground truncate">{tutorName}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -317,46 +284,89 @@ function layoutOverlappingEvents(events) {
   return laidOut.map((event) => ({ ...event, totalLanes: maxLanes }))
 }
 
-function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
+const UNASSIGNED_KEY = '__unassigned__'
+
+function deriveTutorsFromEvents(events, passedTutors) {
+  if (passedTutors.length > 0) return passedTutors
+  const seen = {}
+  events.forEach((event) => {
+    const key = event.extendedProps?.tutorKey || UNASSIGNED_KEY
+    if (!seen[key]) {
+      const name = event.extendedProps?.tutorName || (key === UNASSIGNED_KEY ? 'Unassigned' : key)
+      const parts = name.trim().split(/\s+/)
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : (name.slice(0, 2) || '??').toUpperCase()
+      seen[key] = {
+        key,
+        name,
+        initials,
+        color: key === UNASSIGNED_KEY ? 'hsl(var(--muted-foreground))' : (event.extendedProps?.color || CALENDAR_PALETTE[0]),
+      }
+    }
+  })
+  return Object.values(seen)
+}
+
+function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents, tutors, onEventClick }) {
   const dayHeight = (DAY_END_HOUR - DAY_START_HOUR) * DAY_ROW_HEIGHT
+  const startMinutes = DAY_START_HOUR * 60
+
+  const effectiveTutors = useMemo(
+    () => deriveTutorsFromEvents([...dayTimedEvents, ...dayAllDayEvents], tutors),
+    [dayTimedEvents, dayAllDayEvents, tutors]
+  )
 
   const byTutorTimed = useMemo(() => {
     const map = {}
-    TUTORS.forEach((tutor) => {
-      const filtered = dayTimedEvents.filter((event) => event.extendedProps?.tutorKey === tutor.key)
+    effectiveTutors.forEach((tutor) => {
+      const filtered = dayTimedEvents.filter((event) => {
+        const key = event.extendedProps?.tutorKey || UNASSIGNED_KEY
+        return key === tutor.key
+      })
       map[tutor.key] = layoutOverlappingEvents(filtered)
     })
     return map
-  }, [dayTimedEvents])
+  }, [dayTimedEvents, effectiveTutors])
 
   const byTutorAllDay = useMemo(() => {
     const map = {}
-    TUTORS.forEach((tutor) => {
-      map[tutor.key] = dayAllDayEvents.filter((event) => event.extendedProps?.tutorKey === tutor.key)
+    effectiveTutors.forEach((tutor) => {
+      map[tutor.key] = dayAllDayEvents.filter((event) => {
+        const key = event.extendedProps?.tutorKey || UNASSIGNED_KEY
+        return key === tutor.key
+      })
     })
     return map
-  }, [dayAllDayEvents])
+  }, [dayAllDayEvents, effectiveTutors])
 
   const isToday = isSameDate(focusDate, now)
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
-  const startMinutes = DAY_START_HOUR * 60
   const endMinutes = DAY_END_HOUR * 60
   const nowOffset = isToday && nowMinutes >= startMinutes && nowMinutes <= endMinutes
     ? ((nowMinutes - startMinutes) / 60) * DAY_ROW_HEIGHT
     : null
 
+  if (dayTimedEvents.length === 0 && dayAllDayEvents.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center rounded-[12px] border border-border bg-background text-[13px] text-muted-foreground">
+        No appointments found for this day.
+      </div>
+    )
+  }
+
   return (
     <div className="h-full overflow-auto rounded-[12px] border border-border bg-background">
-      <div style={{ minWidth: DAY_LEFT_RAIL_WIDTH + TUTORS.length * 180 }}>
+      <div style={{ minWidth: DAY_LEFT_RAIL_WIDTH + effectiveTutors.length * 180 }}>
         <div className="sticky top-0 z-20 flex h-16 border-b border-border bg-background">
           <div className="w-[86px] shrink-0 border-r border-border px-2 py-2 text-[10px] font-medium text-muted-foreground">
             Teachers
           </div>
-          {TUTORS.map((tutor, idx) => (
+          {effectiveTutors.map((tutor, idx) => (
             <div
               key={tutor.key}
               className="flex-1 px-2 py-2"
-              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
+              style={{ borderRight: idx < effectiveTutors.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
               <div className="flex items-center justify-center gap-2">
                 <span
@@ -373,14 +383,22 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
 
         <div className="flex h-10 border-b border-border bg-muted/40">
           <div className="w-[86px] shrink-0 border-r border-border px-2 py-2 text-[10px] font-medium text-muted-foreground">All day</div>
-          {TUTORS.map((tutor, idx) => (
+          {effectiveTutors.map((tutor, idx) => (
             <div
               key={`allday-${tutor.key}`}
               className="flex-1 px-1.5 py-1"
-              style={{ borderRight: idx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
+              style={{ borderRight: idx < effectiveTutors.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
-              {byTutorAllDay[tutor.key].slice(0, 1).map((event) => (
-                <div key={event.id} className="truncate rounded bg-[color:var(--studio-primary)] px-2 py-0.5 text-[10px] text-brand-foreground">
+              {(byTutorAllDay[tutor.key] || []).slice(0, 1).map((event) => (
+                <div
+                  key={event.id}
+                  className="truncate rounded-md px-2 py-0.5 text-[10px] font-semibold"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${event.extendedProps?.color || 'var(--studio-primary)'} 28%, hsl(var(--card)))`,
+                    borderLeft: `3px solid ${event.extendedProps?.color || 'var(--studio-primary)'}`,
+                    color: event.extendedProps?.color || 'var(--studio-primary)',
+                  }}
+                >
                   {event.title}
                 </div>
               ))}
@@ -400,11 +418,11 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
             })}
           </div>
 
-          {TUTORS.map((tutor, colIdx) => (
+          {effectiveTutors.map((tutor, colIdx) => (
             <div
               key={`${tutor.key}-day-col`}
               className="relative flex-1 bg-muted/25"
-              style={{ height: dayHeight, borderRight: colIdx < TUTORS.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
+              style={{ height: dayHeight, borderRight: colIdx < effectiveTutors.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
             >
               {Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }).map((_, idx) => (
                 <div
@@ -414,7 +432,7 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
                 />
               ))}
 
-              {byTutorTimed[tutor.key].map((event) => {
+              {(byTutorTimed[tutor.key] || []).map((event) => {
                 const start = new Date(event.start)
                 const end = new Date(event.end)
                 const top = ((start.getHours() * 60 + start.getMinutes() - startMinutes) / 60) * DAY_ROW_HEIGHT
@@ -422,24 +440,46 @@ function TutorDayCalendar({ focusDate, now, dayTimedEvents, dayAllDayEvents }) {
                 const widthPercent = 100 / event.totalLanes
                 const leftPercent = event.lane * widthPercent
 
+                const accentColor = event.extendedProps?.color || 'var(--studio-primary)'
+                const isCancelledEvent = event.extendedProps?.status === 'cancelled'
+                const initials = (event.extendedProps?.tutorName || '')
+                  .split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+
                 return (
                   <div
                     key={event.id}
-                    className="absolute rounded-md border p-1.5"
+                    onClick={() => onEventClick?.(event.extendedProps?.raw)}
+                    className={`absolute overflow-hidden cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md rounded-lg ${isCancelledEvent ? 'opacity-50' : ''}`}
                     style={{
                       top,
                       height,
                       left: `calc(${leftPercent}% + 2px)`,
                       width: `calc(${widthPercent}% - 4px)`,
-                      backgroundColor: event.backgroundColor,
-                      borderColor: event.borderColor,
+                      borderLeft: `3px solid ${accentColor}`,
+                      backgroundColor: `color-mix(in srgb, ${accentColor} 28%, hsl(var(--card)))`,
                     }}
                   >
-                    <div className="truncate text-[10px] font-semibold text-foreground">
-                      {formatTime(event.start)} - {formatTime(event.end)}
+                    <div className="h-full flex flex-col px-2 py-1.5 gap-0.5 overflow-hidden">
+                      <div className={`text-[11px] font-bold text-foreground leading-tight truncate ${isCancelledEvent ? 'line-through' : ''}`}>
+                        {event.title}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground leading-none">
+                        {formatTime(event.start)} – {formatTime(event.end)}
+                      </div>
+                      {event.extendedProps?.tutorName && height > 44 && (
+                        <div className="flex items-center gap-1 mt-auto">
+                          <span
+                            className="h-4 w-4 rounded-full text-[8px] font-bold grid place-items-center text-white shrink-0"
+                            style={{ backgroundColor: accentColor }}
+                          >
+                            {initials.charAt(0)}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground truncate">
+                            {event.extendedProps.tutorName}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="truncate text-[10px] text-muted-foreground">{event.title}</div>
-                    <div className="truncate text-[9px] text-muted-foreground/90">{event.extendedProps?.tutorName}</div>
                   </div>
                 )
               })}
@@ -470,6 +510,12 @@ export default function CalendarPage() {
   const [nowMarker, setNowMarker] = useState(() => Date.now())
   const now = useMemo(() => new Date(nowMarker), [nowMarker])
 
+  const [events, setEvents] = useState([])
+  const [instructors, setInstructors] = useState([])
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [slotSelection, setSlotSelection] = useState(null) // { date, time }
+
   const rangeStart = useMemo(() => {
     const monthStart = new Date(focusDate.getFullYear(), focusDate.getMonth(), 1)
     return addDays(startOfWeekSunday(monthStart), -28)
@@ -477,30 +523,29 @@ export default function CalendarPage() {
 
   const rangeEnd = useMemo(() => addDays(rangeStart, 120), [rangeStart])
 
-  const events = useMemo(() => {
-    const tutorByKey = Object.fromEntries(TUTORS.map((t) => [t.key, t]))
-    return buildMockEvents(rangeStart, rangeEnd).map((event) => {
-      const tutor = tutorByKey[event.tutorKey]
-      return {
-        id: event.id,
-        title: event.title,
-        start: event.start,
-        end: event.end,
-        allDay: event.allDay,
-        backgroundColor: event.allDay
-          ? 'var(--studio-primary)'
-          : `color-mix(in srgb, ${tutor.color} 14%, transparent)`,
-        borderColor: event.allDay ? 'var(--studio-primary)' : tutor.color,
-        textColor: event.allDay ? 'rgb(var(--studio-on-primary-rgb))' : 'hsl(var(--foreground))',
-        extendedProps: {
-          tutorName: event.tutorName,
-          tutorKey: event.tutorKey,
-        },
-      }
+  const fetchCalendarEvents = useCallback(async () => {
+    setIsLoadingEvents(true)
+    const params = new URLSearchParams({
+      start: rangeStart.toISOString(),
+      end: rangeEnd.toISOString(),
+      limit: 1000,
     })
-  }, [rangeEnd, rangeStart])
+    const result = await api.get(`/api/calendar?${params}`)
+    if (result.success && Array.isArray(result.data)) {
+      const derived = deriveInstructors(result.data)
+      const colorMap = buildColorMap(derived)
+      setEvents(transformAppointments(result.data, colorMap))
+      if (derived.length > 0) setInstructors(derived)
+    }
+    setIsLoadingEvents(false)
+  }, [rangeStart, rangeEnd])
+
+  useEffect(() => {
+    fetchCalendarEvents()
+  }, [fetchCalendarEvents])
 
   const headerLabel = useMemo(() => formatHeaderLabel(focusDate, viewMode), [focusDate, viewMode])
+
   const dayTimedEvents = useMemo(
     () => events.filter((event) => !event.allDay && isSameDate(new Date(event.start), focusDate)),
     [events, focusDate]
@@ -525,15 +570,15 @@ export default function CalendarPage() {
       return
     }
 
-    const api = getCalendarApi()
-    if (!api) {
+    const calApi = getCalendarApi()
+    if (!calApi) {
       setViewMode(mode)
       if (date) setFocusDate(new Date(date))
       return
     }
-    api.changeView(FULLCALENDAR_VIEW[mode], date ?? api.getDate())
+    calApi.changeView(FULLCALENDAR_VIEW[mode], date ?? calApi.getDate())
     setViewMode(mode)
-    setFocusDate(new Date(date ?? api.getDate()))
+    setFocusDate(new Date(date ?? calApi.getDate()))
   }
 
   const goToToday = () => {
@@ -542,9 +587,9 @@ export default function CalendarPage() {
       return
     }
 
-    const api = getCalendarApi()
-    if (!api) return
-    api.today()
+    const calApi = getCalendarApi()
+    if (!calApi) return
+    calApi.today()
     syncDateFromApi()
   }
 
@@ -554,10 +599,10 @@ export default function CalendarPage() {
       return
     }
 
-    const api = getCalendarApi()
-    if (!api) return
-    if (direction < 0) api.prev()
-    else api.next()
+    const calApi = getCalendarApi()
+    if (!calApi) return
+    if (direction < 0) calApi.prev()
+    else calApi.next()
     syncDateFromApi()
   }
 
@@ -568,9 +613,9 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (viewMode === VIEW_MODE.DAY) return
-    const api = getCalendarApi()
-    if (!api) return
-    api.changeView(FULLCALENDAR_VIEW[viewMode])
+    const calApi = getCalendarApi()
+    if (!calApi) return
+    calApi.changeView(FULLCALENDAR_VIEW[viewMode])
   }, [viewMode])
 
   return (
@@ -592,6 +637,9 @@ export default function CalendarPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              {isLoadingEvents && (
+                <span className="text-[11px] text-muted-foreground animate-pulse">Loading…</span>
+              )}
               <div className="flex items-center">
                 <SegmentedButton
                   active={viewMode === VIEW_MODE.DAY}
@@ -635,6 +683,8 @@ export default function CalendarPage() {
                     now={now}
                     dayTimedEvents={dayTimedEvents}
                     dayAllDayEvents={dayAllDayEvents}
+                    tutors={instructors}
+                    onEventClick={(raw) => { setSelectedEvent(raw); setIsAppointmentPanelOpen(false) }}
                   />
                 ) : (
                   <div className="h-full overflow-hidden rounded-[12px] border border-border bg-background calendar-shell">
@@ -652,9 +702,8 @@ export default function CalendarPage() {
                       slotDuration="00:30:00"
                       expandRows
                       stickyHeaderDates
-                      dayMaxEvents={3}
-                      moreLinkClick="popover"
-                      eventMaxStack={3}
+                      dayMaxEvents={false}
+                      eventMaxStack={10}
                       events={events}
                       editable={false}
                       selectable
@@ -665,11 +714,21 @@ export default function CalendarPage() {
                         setFocusDate(new Date(arg.view.calendar.getDate()))
                       }}
                       dateClick={(arg) => {
+                        const clickedDate = arg.dateStr?.slice(0, 10) ?? ''
+                        const clickedTime = arg.dateStr?.slice(11, 16) ?? ''
                         if (mapViewTypeToMode(arg.view.type) !== VIEW_MODE.DAY) {
                           switchToMode(VIEW_MODE.DAY, arg.date)
+                        } else {
+                          setSlotSelection({ date: clickedDate, time: clickedTime })
+                          setSelectedEvent(null)
+                          setIsAppointmentPanelOpen(true)
                         }
                       }}
                       navLinkDayClick={(date) => switchToMode(VIEW_MODE.DAY, date)}
+                      eventClick={(arg) => {
+                        const raw = arg.event.extendedProps?.raw
+                        if (raw) { setSelectedEvent(raw); setIsAppointmentPanelOpen(false) }
+                      }}
                       eventContent={renderEventContent}
                       views={{
                         dayGridMonth: { dayMaxEventRows: 3 },
@@ -683,7 +742,20 @@ export default function CalendarPage() {
               </div>
 
               {isAppointmentPanelOpen && (
-                <AppointmentComposerPanel onClose={() => setIsAppointmentPanelOpen(false)} />
+                <AppointmentComposerPanel
+                  onClose={() => { setIsAppointmentPanelOpen(false); setSlotSelection(null) }}
+                  onCreated={fetchCalendarEvents}
+                  initialDate={slotSelection?.date}
+                  initialTime={slotSelection?.time}
+                />
+              )}
+              {selectedEvent && !isAppointmentPanelOpen && (
+                <EventDetailPanel
+                  event={selectedEvent}
+                  onClose={() => setSelectedEvent(null)}
+                  onUpdated={() => { fetchCalendarEvents(); setSelectedEvent(null) }}
+                  onDeleted={() => { fetchCalendarEvents(); setSelectedEvent(null) }}
+                />
               )}
             </div>
           </div>
