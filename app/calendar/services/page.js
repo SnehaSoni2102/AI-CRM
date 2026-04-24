@@ -27,6 +27,12 @@ import ServiceDialog from './components/ServiceDialog'
 
 const ROWS_PER_PAGE = 10
 
+function BoolBadge({ value }) {
+  return value
+    ? <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600">Yes</span>
+    : <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">No</span>
+}
+
 export default function CalendarServicesPage() {
   const [services, setServices] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -178,9 +184,13 @@ export default function CalendarServicesPage() {
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Service Code</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Location</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Description</TableHead>
-                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Documents</TableHead>
-                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Count on Calendar</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Price</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Chargeable</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Group</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Sundry</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">On Calendar</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Sort Order</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Documents</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Status</TableHead>
                   <TableHead className="w-12 py-3 pr-4 pl-0" />
                 </TableRow>
@@ -188,7 +198,7 @@ export default function CalendarServicesPage() {
               <TableBody>
                 {services.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="py-16 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={14} className="py-16 text-center text-sm text-muted-foreground">
                       {searchQuery ? 'No services match your search.' : 'No services yet. Click "Add Service" to create one.'}
                     </TableCell>
                   </TableRow>
@@ -229,6 +239,26 @@ export default function CalendarServicesPage() {
                         </p>
                       </TableCell>
                       <TableCell className="py-3 px-4">
+                        <p className="text-sm text-foreground">
+                          {service.price != null ? `$${Number(service.price).toFixed(2)}` : '—'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <BoolBadge value={service.isChargeable} />
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <BoolBadge value={service.isGroup} />
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <BoolBadge value={service.isSundry} />
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <BoolBadge value={service.countOnCalendar} />
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <p className="text-sm text-foreground">{service.sortByOrder ?? 0}</p>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
                         {service.documents?.length > 0 ? (
                           <div className="flex items-center gap-1.5">
                             <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -237,12 +267,6 @@ export default function CalendarServicesPage() {
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
                         )}
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <p className="text-sm text-foreground">{service.countOnCalendar ?? 0}</p>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <p className="text-sm text-foreground">{service.sortByOrder ?? 0}</p>
                       </TableCell>
                       <TableCell className="py-3 px-4">
                         <span

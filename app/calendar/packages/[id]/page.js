@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save, ChevronDown } from 'lucide-react'
 import MainLayout from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,85 @@ import api from '@/lib/api'
 import { toast } from '@/components/ui/toast'
 import GlobalLoader from '@/components/shared/GlobalLoader'
 import LocationSelector from '@/components/shared/LocationSelector'
+
+function ServiceCodePicker({ value, onChange, onSelect, calendarServices }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(value || '')
+  const [dropdownStyle, setDropdownStyle] = useState({})
+  const inputRef = useRef(null)
+  const wrapperRef = useRef(null)
+
+  useEffect(() => { setQuery(value || '') }, [value])
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  function openDropdown() {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect()
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: 240,
+        zIndex: 9999,
+      })
+    }
+    setOpen(true)
+  }
+
+  const filtered = calendarServices.filter(
+    (s) =>
+      s.serviceCode.toLowerCase().includes(query.toLowerCase()) ||
+      s.serviceName.toLowerCase().includes(query.toLowerCase()),
+  )
+
+  return (
+    <div ref={wrapperRef} className="relative w-[110px]">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          placeholder="Code"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); openDropdown() }}
+          onFocus={openDropdown}
+          className="h-8 text-sm pr-6"
+        />
+        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      </div>
+      {open && filtered.length > 0 && (
+        <div
+          style={dropdownStyle}
+          className="max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
+        >
+          {filtered.map((s) => (
+            <button
+              key={s._id}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                onSelect(s)
+                setQuery(s.serviceCode)
+                setOpen(false)
+              }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/60 flex items-center gap-2"
+            >
+              <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded border border-border shrink-0">
+                {s.serviceCode}
+              </span>
+              <span className="text-foreground truncate">{s.serviceName}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function randomColor() {
   return `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')}`
@@ -60,6 +139,13 @@ export default function PackageEditPage() {
 
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
+  const [calendarServices, setCalendarServices] = useState([])
+
+  useEffect(() => {
+    api.get('/api/calendar-service?limit=200').then((res) => {
+      if (res.success) setCalendarServices(Array.isArray(res.data) ? res.data : [])
+    })
+  }, [])
 
   const [packageName, setPackageName] = useState('')
   const [locationID, setLocationID] = useState('')
@@ -103,6 +189,20 @@ export default function PackageEditPage() {
   useEffect(() => {
     if (!isNew) loadPackage()
   }, [isNew, loadPackage])
+
+  function selectServiceFromCatalog(index, catalogService) {
+    setServices((prev) => {
+      const next = [...prev]
+      next[index] = {
+        ...next[index],
+        serviceName: catalogService.serviceName,
+        serviceCode: catalogService.serviceCode,
+        serviceDetails: catalogService.description || '',
+        pricePerSession: catalogService.price ?? next[index].pricePerSession,
+      }
+      return next
+    })
+  }
 
   function updateService(index, field, value) {
     setServices((prev) => {
@@ -332,11 +432,11 @@ export default function PackageEditPage() {
                           />
                         </td>
                         <td className="py-2 px-3">
-                          <Input
-                            placeholder="Code"
+                          <ServiceCodePicker
                             value={svc.serviceCode}
-                            onChange={(e) => updateService(idx, 'serviceCode', e.target.value)}
-                            className="h-8 text-sm w-[80px]"
+                            onChange={(val) => updateService(idx, 'serviceCode', val)}
+                            onSelect={(catalogSvc) => selectServiceFromCatalog(idx, catalogSvc)}
+                            calendarServices={calendarServices}
                           />
                         </td>
                         <td className="py-2 px-3">

@@ -172,7 +172,6 @@ export default function LessonsPage() {
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Location Name</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Duration</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Unit</TableHead>
-                  <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Credits</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Color</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-medium text-muted-foreground">Active</TableHead>
                   <TableHead className="w-12 py-3 pr-4 pl-0" />
@@ -181,7 +180,7 @@ export default function LessonsPage() {
               <TableBody>
                 {lessons.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={6} className="py-16 text-center text-sm text-muted-foreground">
                       {searchQuery ? 'No lessons match your search.' : 'No lessons yet. Click "Create New" to add one.'}
                     </TableCell>
                   </TableRow>
@@ -211,9 +210,6 @@ export default function LessonsPage() {
                       </TableCell>
                       <TableCell className="py-3 px-4">
                         <p className="text-sm text-foreground">{lesson.unit ?? 1}</p>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <p className="text-sm text-foreground">{lesson.credits ?? 0}</p>
                       </TableCell>
                       <TableCell className="py-3 px-4">
                         {lesson.color ? (

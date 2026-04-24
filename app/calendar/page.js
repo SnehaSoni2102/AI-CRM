@@ -235,16 +235,18 @@ function SmallRoundedButton({ children, onClick }) {
 const EVENT_TYPE_LABEL = {
   private: "Appt",
   lesson:  "Group",
-  trial:   "Trial",
+  trial:   "Intro",
   event:   "To Do",
   record:  "Record",
 };
 
 const STATUS_STYLES = {
-  confirmed:  { bg: "bg-emerald-100 dark:bg-emerald-950/60", text: "text-emerald-700 dark:text-emerald-300", label: "Confirmed" },
-  cancelled:  { bg: "bg-red-100 dark:bg-red-950/60",     text: "text-red-700 dark:text-red-300",         label: "Cancelled" },
-  pending:    { bg: "bg-amber-100 dark:bg-amber-950/60",  text: "text-amber-700 dark:text-amber-300",     label: "Pending"   },
-  completed:  { bg: "bg-blue-100 dark:bg-blue-950/60",   text: "text-blue-700 dark:text-blue-300",       label: "Completed" },
+  scheduled:          { bg: "bg-blue-100 dark:bg-blue-950/60",    text: "text-blue-700 dark:text-blue-300",    label: "Scheduled" },
+  completed:          { bg: "bg-emerald-100 dark:bg-emerald-950/60", text: "text-emerald-700 dark:text-emerald-300", label: "Completed" },
+  cancelled_no_charge:{ bg: "bg-zinc-100 dark:bg-zinc-800/60",    text: "text-zinc-500 dark:text-zinc-400",    label: "Cancelled" },
+  cancelled_charged:  { bg: "bg-red-100 dark:bg-red-950/60",      text: "text-red-700 dark:text-red-300",      label: "Cancelled – Charged" },
+  no_show_no_charge:  { bg: "bg-orange-100 dark:bg-orange-950/60",text: "text-orange-600 dark:text-orange-400",label: "No Show" },
+  no_show_charged:    { bg: "bg-orange-100 dark:bg-orange-950/60",text: "text-orange-700 dark:text-orange-300",label: "No Show – Charged" },
 };
 
 function TypeBadge({ type }) {
@@ -1121,20 +1123,22 @@ function SlotSizePicker({ value, onApply }) {
 }
 
 const STATUS_FILTER_OPTIONS = [
-  { value: "all",       label: "All Statuses" },
-  { value: "scheduled",  label: "Scheduled" },
-  { value: "completed",  label: "Completed" },
-  { value: "cancelled",  label: "Cancelled" },
-  { value: "no_show",    label: "No Show" },
-  { value: "rescheduled",label: "Rescheduled" },
+  { value: "all",                label: "All Statuses" },
+  { value: "scheduled",          label: "Scheduled" },
+  { value: "completed",          label: "Completed" },
+  { value: "cancelled_no_charge",label: "Cancelled – No Charge" },
+  { value: "cancelled_charged",  label: "Cancelled – Charged" },
+  { value: "no_show_no_charge",  label: "No Show – No Charge" },
+  { value: "no_show_charged",    label: "No Show – Charged" },
 ];
 
 const STATUS_DOT = {
-  scheduled:   "bg-blue-400",
-  completed:   "bg-emerald-400",
-  cancelled:   "bg-red-400",
-  no_show:     "bg-orange-400",
-  rescheduled: "bg-amber-400",
+  scheduled:           "bg-blue-400",
+  completed:           "bg-emerald-400",
+  cancelled_no_charge: "bg-zinc-400",
+  cancelled_charged:   "bg-red-400",
+  no_show_no_charge:   "bg-orange-300",
+  no_show_charged:     "bg-orange-500",
 };
 
 function StatusFilterDropdown({ value, onChange }) {
@@ -1610,18 +1614,9 @@ export default function CalendarPage() {
                       dateClick={(arg) => {
                         const clickedDate = arg.dateStr?.slice(0, 10) ?? "";
                         const clickedTime = arg.dateStr?.slice(11, 16) ?? "";
-                        if (
-                          mapViewTypeToMode(arg.view.type) !== VIEW_MODE.DAY
-                        ) {
-                          switchToMode(VIEW_MODE.DAY, arg.date);
-                        } else {
-                          setSlotSelection({
-                            date: clickedDate,
-                            time: clickedTime,
-                          });
-                          setSelectedEvent(null);
-                          setIsAppointmentPanelOpen(true);
-                        }
+                        setSlotSelection({ date: clickedDate, time: clickedTime });
+                        setSelectedEvent(null);
+                        setIsAppointmentPanelOpen(true);
                       }}
                       navLinkDayClick={(date) =>
                         switchToMode(VIEW_MODE.DAY, date)
@@ -1654,6 +1649,7 @@ export default function CalendarPage() {
                   onCreated={fetchCalendarEvents}
                   initialDate={slotSelection?.date}
                   initialTime={slotSelection?.time}
+                  initialDuration={customSlotMins}
                 />
               )}
               {selectedEvent && !isAppointmentPanelOpen && (

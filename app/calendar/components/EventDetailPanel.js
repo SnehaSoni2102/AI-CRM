@@ -6,11 +6,12 @@ import api from "@/lib/api";
 import MiniStudentPanel from "./MiniStudentPanel";
 
 const STATUS_OPTIONS = [
-  { value: "scheduled", label: "Scheduled" },
-  { value: "completed", label: "Completed" },
-  { value: "rescheduled", label: "Rescheduled" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "no_show", label: "No Show" },
+  { value: "scheduled",           label: "Scheduled" },
+  { value: "completed",           label: "Completed" },
+  { value: "cancelled_no_charge", label: "Cancelled – No Charge" },
+  { value: "cancelled_charged",   label: "Cancelled – Charged" },
+  { value: "no_show_no_charge",   label: "No Show – No Charge" },
+  { value: "no_show_charged",     label: "No Show – Charged" },
 ];
 
 const TYPE_OPTIONS = [
@@ -98,19 +99,20 @@ function Select({ value, onChange, options }) {
   );
 }
 
+const STATUS_META = {
+  scheduled:           { cls: "bg-blue-500/10 text-blue-400",    label: "Scheduled" },
+  completed:           { cls: "bg-emerald-500/10 text-emerald-400", label: "Completed" },
+  cancelled_no_charge: { cls: "bg-zinc-500/10 text-zinc-400",    label: "Cancelled" },
+  cancelled_charged:   { cls: "bg-red-500/10 text-red-400",      label: "Cancelled – Charged" },
+  no_show_no_charge:   { cls: "bg-orange-500/10 text-orange-400",label: "No Show" },
+  no_show_charged:     { cls: "bg-orange-500/10 text-orange-500",label: "No Show – Charged" },
+};
+
 function StatusBadge({ status }) {
-  const colors = {
-    scheduled: "bg-blue-500/10 text-blue-400",
-    completed: "bg-green-500/10 text-green-400",
-    cancelled: "bg-red-500/10 text-red-400",
-    rescheduled: "bg-yellow-500/10 text-yellow-400",
-    no_show: "bg-orange-500/10 text-gray-400",
-  };
+  const meta = STATUS_META[status];
   return (
-    <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${colors[status] || "bg-muted text-muted-foreground"}`}
-    >
-      {status}
+    <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta?.cls || "bg-muted text-muted-foreground"}`}>
+      {meta?.label || status}
     </span>
   );
 }
@@ -158,9 +160,6 @@ export default function EventDetailPanel({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [updateScope, setUpdateScope] = useState("this"); // 'this' | 'all'
   const [deleteScope, setDeleteScope] = useState("this"); // 'this' | 'all'
-  const [showCancelFlow, setShowCancelFlow] = useState(false);
-  const [cancelCharge, setCancelCharge] = useState("none"); // 'none' | 'charge'
-  const [cancelAmount, setCancelAmount] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [selectedStudentName, setSelectedStudentName] = useState("");
   const isRecurring = Boolean(event.recurrenceGroupID);
@@ -183,6 +182,9 @@ export default function EventDetailPanel({
     status: event.effectiveStatus || event.status || "scheduled",
     type: event.type || "",
     notes: event.notes || "",
+    payment_collected: event.payment?.collected || false,
+    payment_amount: event.payment?.amount != null ? String(event.payment.amount) : "",
+    payment_method: event.payment?.method || "",
   });
 
   const setField = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
@@ -256,6 +258,13 @@ export default function EventDetailPanel({
       status: form.status,
       type: form.type || undefined,
       notes: form.notes || undefined,
+      payment: form.payment_collected
+        ? {
+            amount: form.payment_amount !== "" ? Number(form.payment_amount) : undefined,
+            method: form.payment_method || undefined,
+            collected: true,
+          }
+        : { collected: false },
     };
 
     const url =
@@ -272,24 +281,15 @@ export default function EventDetailPanel({
     setIsSaving(false);
   };
 
-  const handleCancelEvent = async () => {
+  const handleQuickStatus = async (newStatus) => {
     setError(null);
     setIsSaving(true);
-    const chargeNote =
-      cancelCharge === "charge" && cancelAmount
-        ? `Cancellation charge: $${cancelAmount}`
-        : null;
-    const updatedNotes =
-      [event.notes, chargeNote].filter(Boolean).join("\n") || undefined;
-    const result = await api.put(`/api/calendar/${event._id}`, {
-      status: "cancelled",
-      ...(updatedNotes ? { notes: updatedNotes } : {}),
-    });
+    const result = await api.put(`/api/calendar/${event._id}`, { status: newStatus });
     if (result.success) {
       onUpdated?.();
       onClose();
     } else {
-      setError(result.error || "Failed to cancel event.");
+      setError(result.error || "Failed to update status.");
     }
     setIsSaving(false);
   };
@@ -420,6 +420,68 @@ export default function EventDetailPanel({
                 className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[12px] text-foreground outline-none focus:border-primary"
               />
             </Field>
+
+            {/* Payment */}
+            <div className={[
+              "rounded-xl border px-3 py-2.5 transition-colors",
+              form.payment_collected ? "border-emerald-500/30 bg-emerald-500/5" : "border-border bg-muted/20",
+            ].join(" ")}>
+              <div className="flex items-center justify-between">
+                <p className={`text-[12px] font-semibold ${form.payment_collected ? "text-emerald-600" : "text-foreground"}`}>
+                  {form.payment_collected ? "Payment recorded" : "Record payment"}
+                </p>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.payment_collected}
+                  onClick={() => setField("payment_collected", !form.payment_collected)}
+                  className={[
+                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                    form.payment_collected ? "bg-emerald-500" : "bg-muted",
+                  ].join(" ")}
+                >
+                  <span className={[
+                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform",
+                    form.payment_collected ? "translate-x-4" : "translate-x-0",
+                  ].join(" ")} />
+                </button>
+              </div>
+              {form.payment_collected && (
+                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block mb-1 text-[10px] font-medium text-muted-foreground">Amount ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.payment_amount}
+                        onChange={(e) => setField("payment_amount", e.target.value)}
+                        placeholder="0.00"
+                        className="h-9 w-full rounded-lg border border-border bg-background pl-6 pr-3 text-[12px] text-foreground outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-[10px] font-medium text-muted-foreground">Method</label>
+                    <div className="relative">
+                      <select
+                        value={form.payment_method}
+                        onChange={(e) => setField("payment_method", e.target.value)}
+                        className="h-9 w-full appearance-none rounded-lg border border-border bg-background px-3 pr-8 text-[12px] text-foreground outline-none focus:border-emerald-500"
+                      >
+                        <option value="">Select…</option>
+                        {["cash","card","online","cheque","other"].map((m) => (
+                          <option key={m} value={m} className="capitalize">{m.charAt(0).toUpperCase() + m.slice(1)}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <>
@@ -441,6 +503,28 @@ export default function EventDetailPanel({
                 <ReadValue>{formatDisplayTime(event.endDateTime)}</ReadValue>
               </Field>
             </div>
+
+            {/* Service info */}
+            {event.calendarServiceID && (
+              <div>
+                <Label>Service</Label>
+                <div className="mt-1 rounded-lg border border-border bg-muted/30 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-foreground truncate">
+                      {event.calendarServiceID.serviceName}
+                    </p>
+                    {event.calendarServiceID.serviceCode && (
+                      <p className="text-[10px] text-muted-foreground">{event.calendarServiceID.serviceCode}</p>
+                    )}
+                  </div>
+                  {event.calendarServiceID.isChargeable && event.calendarServiceID.price > 0 && (
+                    <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+                      ${Number(event.calendarServiceID.price).toFixed(2)} / session
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Instructor details */}
             <div>
@@ -529,6 +613,22 @@ export default function EventDetailPanel({
                 </p>
               </Field>
             )}
+
+            {event.payment?.collected && (
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[11px] font-semibold text-emerald-600">Payment Collected</p>
+                  {event.payment.method && (
+                    <p className="text-[10px] text-muted-foreground capitalize">{event.payment.method}</p>
+                  )}
+                </div>
+                {event.payment.amount != null && (
+                  <span className="text-[14px] font-bold text-emerald-600">
+                    ${Number(event.payment.amount).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -584,60 +684,60 @@ export default function EventDetailPanel({
           </div>
         ) : (
           <>
-            {event.status !== "cancelled" && (
-              showCancelFlow ? (
-                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
-                  <p className="text-[12px] font-semibold text-foreground">Cancel this lesson?</p>
-                  <div className="relative">
-                    <select
-                      value={cancelCharge}
-                      onChange={(e) => setCancelCharge(e.target.value)}
-                      className="h-9 w-full appearance-none rounded-lg border border-border bg-background px-3 pr-8 text-[12px] text-foreground outline-none focus:border-primary"
-                    >
-                      <option value="none">No Charge</option>
-                      <option value="charge">Charge</option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  </div>
-                  {cancelCharge === "charge" && (
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Amount ($)"
-                      value={cancelAmount}
-                      onChange={(e) => setCancelAmount(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-border bg-background px-3 text-[12px] text-foreground outline-none focus:border-primary"
-                    />
-                  )}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { setShowCancelFlow(false); setCancelCharge("none"); setCancelAmount(""); }}
-                      className="flex-1 h-9 rounded-lg border border-border bg-background text-[12px] font-semibold text-foreground hover:bg-muted/40"
-                    >
-                      Keep
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelEvent}
-                      disabled={isSaving}
-                      className="flex-1 h-9 rounded-lg bg-destructive text-[12px] font-semibold text-white hover:bg-destructive/90 disabled:opacity-60"
-                    >
-                      {isSaving ? "Cancelling…" : "Confirm Cancel"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowCancelFlow(true)}
-                  className="w-full h-9 rounded-lg border border-border bg-background text-[12px] font-semibold text-foreground hover:bg-muted/40"
-                >
-                  Cancel Lesson
-                </button>
-              )
+            {/* Quick record-payment button — only shown when no payment is on file */}
+            {!event.payment?.collected && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="w-full h-9 rounded-lg border border-emerald-500/40 text-[12px] font-semibold text-emerald-600 hover:bg-emerald-500/8 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span className="text-emerald-500 font-bold text-[14px] leading-none">$</span>
+                Record Payment
+              </button>
             )}
+
+            {/* Quick status actions — only shown when event is still scheduled */}
+            {event.effectiveStatus === "scheduled" || event.status === "scheduled" ? (
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Mark as</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickStatus("cancelled_no_charge")}
+                    disabled={isSaving}
+                    className="h-9 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-background text-[11px] font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel – No Charge
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickStatus("cancelled_charged")}
+                    disabled={isSaving}
+                    className="h-9 rounded-lg border border-red-300 dark:border-red-800 bg-background text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel – Charged
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickStatus("no_show_no_charge")}
+                    disabled={isSaving}
+                    className="h-9 rounded-lg border border-orange-300 dark:border-orange-800 bg-background text-[11px] font-semibold text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 disabled:opacity-50 transition-colors"
+                  >
+                    No Show – No Charge
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickStatus("no_show_charged")}
+                    disabled={isSaving}
+                    className="h-9 rounded-lg border border-orange-400 dark:border-orange-700 bg-background text-[11px] font-semibold text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 disabled:opacity-50 transition-colors"
+                  >
+                    No Show – Charged
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Delete */}
             {confirmDelete ? (
               <div className="space-y-2">
                 {isRecurring && (

@@ -5,10 +5,12 @@ import { ArrowLeft, Pin, Plus, Trash2 } from "lucide-react";
 import api from "@/lib/api";
 
 const TABS = [
-  { key: "enrollments", label: "Enrollments" },
+  { key: "enrollments",  label: "Enrollments" },
   { key: "appointments", label: "Appointments" },
-  { key: "payments", label: "Payments" },
-  { key: "notes", label: "Notes" },
+  { key: "packages",     label: "Packages" },
+  { key: "payments",     label: "Payments" },
+  { key: "notes",        label: "Notes" },
+  { key: "messages",     label: "Messages" },
 ];
 
 function statusColor(status) {
@@ -30,6 +32,25 @@ export default function MiniStudentPanel({ customerId, customerName, onBack }) {
 
   const [newNoteText, setNewNoteText] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
+
+  const [customerPackages, setCustomerPackages] = useState([]);
+  const [loadingPkgs, setLoadingPkgs] = useState(false);
+  const [catalogPackages, setCatalogPackages] = useState([]);
+  const [showSellForm, setShowSellForm] = useState(false);
+  const [sellForm, setSellForm] = useState({ packageID: "", purchaseDate: "", totalPaid: "", notes: "" });
+  const [isSelling, setIsSelling] = useState(false);
+  const [sellError, setSellError] = useState(null);
+
+  const [paymentEvents, setPaymentEvents] = useState([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+
+  const [msgMode, setMsgMode] = useState("sms"); // "sms" | "email"
+  const [smsText, setSmsText] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [isSendingMsg, setIsSendingMsg] = useState(false);
+  const [msgSuccess, setMsgSuccess] = useState(null);
+  const [msgError, setMsgError] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -71,6 +92,90 @@ export default function MiniStudentPanel({ customerId, customerName, onBack }) {
   async function handleDeleteNote(noteId) {
     const result = await api.delete(`/api/customer/${customerId}/notes/${noteId}`);
     if (result.success) setCustomer((prev) => ({ ...prev, notes: result.data }));
+  }
+
+  useEffect(() => {
+    if (activeTab !== "packages") return;
+    async function load() {
+      setLoadingPkgs(true);
+      const [pkgsResult, catalogResult] = await Promise.all([
+        api.get(`/api/customer-package/customer/${customerId}`),
+        api.get("/api/package?limit=200&isActive=true"),
+      ]);
+      if (pkgsResult.success && Array.isArray(pkgsResult.data)) setCustomerPackages(pkgsResult.data);
+      if (catalogResult.success && Array.isArray(catalogResult.data)) setCatalogPackages(catalogResult.data);
+      setLoadingPkgs(false);
+    }
+    load();
+  }, [activeTab, customerId]);
+
+  async function handleSellPackage() {
+    if (!sellForm.packageID) { setSellError("Please select a package."); return; }
+    setIsSelling(true);
+    setSellError(null);
+    const result = await api.post("/api/customer-package", {
+      customerID: customerId,
+      packageID: sellForm.packageID,
+      purchaseDate: sellForm.purchaseDate || undefined,
+      totalPaid: sellForm.totalPaid !== "" ? Number(sellForm.totalPaid) : undefined,
+      notes: sellForm.notes || undefined,
+    });
+    if (result.success) {
+      setCustomerPackages((prev) => [result.data, ...prev]);
+      setShowSellForm(false);
+      setSellForm({ packageID: "", purchaseDate: "", totalPaid: "", notes: "" });
+    } else {
+      setSellError(result.error || "Failed to sell package.");
+    }
+    setIsSelling(false);
+  }
+
+  useEffect(() => {
+    if (activeTab !== "payments") return;
+    async function load() {
+      setLoadingPayments(true);
+      const result = await api.get(`/api/calendar/customer/${customerId}`);
+      if (result.success && Array.isArray(result.data)) {
+        setPaymentEvents(
+          result.data
+            .filter((e) => e.payment?.collected)
+            .sort((a, b) => new Date(b.startDateTime) - new Date(a.startDateTime))
+        );
+      }
+      setLoadingPayments(false);
+    }
+    load();
+  }, [activeTab, customerId]);
+
+  async function handleSendMessage() {
+    setMsgError(null);
+    setMsgSuccess(null);
+    if (!customer) return;
+    if (msgMode === "sms") {
+      if (!smsText.trim()) { setMsgError("Message is required."); return; }
+      if (!customer.phoneNumber) { setMsgError("This student has no phone number on file."); return; }
+      setIsSendingMsg(true);
+      const result = await api.post("/api/sms/send-one", {
+        lead: { phoneNumber: customer.phoneNumber, email: customer.email, name: customer.name },
+        message: smsText.trim(),
+        scheduleNow: true,
+      });
+      if (result.success) { setMsgSuccess("SMS sent."); setSmsText(""); }
+      else setMsgError(result.error || "Failed to send SMS.");
+    } else {
+      if (!emailSubject.trim() || !emailBody.trim()) { setMsgError("Subject and body are required."); return; }
+      if (!customer.email) { setMsgError("This student has no email on file."); return; }
+      setIsSendingMsg(true);
+      const result = await api.post("/api/email/send-one", {
+        lead: { email: customer.email, name: customer.name },
+        subject: emailSubject.trim(),
+        body: emailBody.trim(),
+        scheduleNow: true,
+      });
+      if (result.success) { setMsgSuccess("Email sent."); setEmailSubject(""); setEmailBody(""); }
+      else setMsgError(result.error || "Failed to send email.");
+    }
+    setIsSendingMsg(false);
   }
 
   const now = new Date();
@@ -148,7 +253,9 @@ export default function MiniStudentPanel({ customerId, customerName, onBack }) {
                       className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                     >
                       <p className="text-[12px] font-semibold text-foreground">{lesson.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{lesson.credits} credits</p>
+                      {lesson.duration && (
+                        <p className="text-[11px] text-muted-foreground">{lesson.duration} min</p>
+                      )}
                     </div>
                   ))
                 )}
@@ -218,16 +325,250 @@ export default function MiniStudentPanel({ customerId, customerName, onBack }) {
               </div>
             )}
 
+            {/* ── PACKAGES ── */}
+            {activeTab === "packages" && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowSellForm((v) => !v); setSellError(null); }}
+                  className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-[11px] font-semibold text-brand-foreground hover:bg-brand-dark"
+                >
+                  <Plus className="h-3 w-3" />
+                  Sell Package
+                </button>
+
+                {showSellForm && (
+                  <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
+                    <p className="text-[11px] font-semibold text-foreground">Sell a Package</p>
+                    <div className="relative">
+                      <select
+                        value={sellForm.packageID}
+                        onChange={(e) => setSellForm((f) => ({ ...f, packageID: e.target.value }))}
+                        className="h-9 w-full appearance-none rounded-lg border border-border bg-background px-3 pr-8 text-[12px] text-foreground outline-none focus:border-primary"
+                      >
+                        <option value="">Select package…</option>
+                        {catalogPackages.map((p) => (
+                          <option key={p._id} value={p._id}>{p.packageName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <input
+                      type="date"
+                      value={sellForm.purchaseDate}
+                      onChange={(e) => setSellForm((f) => ({ ...f, purchaseDate: e.target.value }))}
+                      className="h-9 w-full rounded-lg border border-border bg-background px-3 text-[12px] text-foreground outline-none focus:border-primary"
+                      placeholder="Purchase date (optional)"
+                    />
+                    <input
+                      type="number"
+                      value={sellForm.totalPaid}
+                      onChange={(e) => setSellForm((f) => ({ ...f, totalPaid: e.target.value }))}
+                      className="h-9 w-full rounded-lg border border-border bg-background px-3 text-[12px] text-foreground outline-none focus:border-primary"
+                      placeholder="Amount paid (optional)"
+                      min="0"
+                      step="0.01"
+                    />
+                    <textarea
+                      rows={2}
+                      value={sellForm.notes}
+                      onChange={(e) => setSellForm((f) => ({ ...f, notes: e.target.value }))}
+                      placeholder="Notes (optional)"
+                      className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[12px] text-foreground outline-none focus:border-primary"
+                    />
+                    {sellError && <p className="text-[11px] text-destructive">{sellError}</p>}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setShowSellForm(false); setSellError(null); }}
+                        className="flex-1 h-8 rounded-lg border border-border bg-background text-[11px] font-semibold text-foreground hover:bg-muted/40"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSellPackage}
+                        disabled={isSelling}
+                        className="flex-1 h-8 rounded-lg bg-brand text-[11px] font-semibold text-brand-foreground hover:bg-brand-dark disabled:opacity-60"
+                      >
+                        {isSelling ? "Selling…" : "Confirm Sale"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {loadingPkgs ? (
+                  <p className="text-[12px] text-muted-foreground animate-pulse">Loading…</p>
+                ) : !customerPackages.length ? (
+                  <p className="text-[12px] text-muted-foreground">No packages purchased yet.</p>
+                ) : (
+                  customerPackages.map((cp) => {
+                    const statusColor =
+                      cp.status === "active" ? "bg-green-500/10 text-green-500" :
+                      cp.status === "exhausted" ? "bg-orange-500/10 text-orange-500" :
+                      cp.status === "expired" ? "bg-red-500/10 text-red-400" :
+                      "bg-muted text-muted-foreground";
+                    return (
+                      <div key={cp._id} className="rounded-lg border border-border bg-muted/30 px-3 py-2.5 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[12px] font-semibold text-foreground">
+                            {cp.packageID?.packageName || "Package"}
+                          </p>
+                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${statusColor}`}>
+                            {cp.status}
+                          </span>
+                        </div>
+                        {cp.expiryDate && (
+                          <p className="text-[10px] text-muted-foreground">
+                            Expires {new Date(cp.expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        )}
+                        {cp.services?.length > 0 && (
+                          <div className="space-y-1">
+                            {cp.services.map((svc, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <span className="text-[11px] text-foreground truncate">{svc.serviceName}</span>
+                                <span className="text-[11px] font-semibold text-foreground shrink-0 ml-2">
+                                  {svc.sessionsRemaining}/{svc.sessionsTotal}
+                                  <span className="text-[10px] font-normal text-muted-foreground ml-0.5">left</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-[10px] text-muted-foreground">
+                          Purchased {new Date(cp.purchaseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          {cp.totalPaid != null && ` · $${Number(cp.totalPaid).toFixed(2)}`}
+                        </p>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* ── MESSAGES ── */}
+            {activeTab === "messages" && (
+              <div className="space-y-3">
+                {/* SMS / Email toggle */}
+                <div className="flex rounded-lg border border-border overflow-hidden text-[11px] font-medium">
+                  <button
+                    type="button"
+                    onClick={() => { setMsgMode("sms"); setMsgError(null); setMsgSuccess(null); }}
+                    className={`flex-1 py-2 transition-colors ${msgMode === "sms" ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:bg-muted/40"}`}
+                  >
+                    SMS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMsgMode("email"); setMsgError(null); setMsgSuccess(null); }}
+                    className={`flex-1 py-2 transition-colors ${msgMode === "email" ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:bg-muted/40"}`}
+                  >
+                    Email
+                  </button>
+                </div>
+
+                {msgMode === "sms" ? (
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-muted-foreground">
+                      To: {customer?.phoneNumber || <span className="text-destructive">No phone number</span>}
+                    </p>
+                    <textarea
+                      rows={4}
+                      value={smsText}
+                      onChange={(e) => setSmsText(e.target.value)}
+                      placeholder="Type your message…"
+                      className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[12px] text-foreground outline-none focus:border-primary"
+                    />
+                    <p className="text-[10px] text-muted-foreground text-right">{smsText.length} chars</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-muted-foreground">
+                      To: {customer?.email || <span className="text-destructive">No email</span>}
+                    </p>
+                    <input
+                      type="text"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="Subject"
+                      className="h-9 w-full rounded-lg border border-border bg-background px-3 text-[12px] text-foreground outline-none focus:border-primary"
+                    />
+                    <textarea
+                      rows={5}
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      placeholder="Message body…"
+                      className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[12px] text-foreground outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+
+                {msgError && <p className="text-[11px] text-destructive">{msgError}</p>}
+                {msgSuccess && <p className="text-[11px] text-emerald-500">{msgSuccess}</p>}
+
+                <button
+                  type="button"
+                  onClick={handleSendMessage}
+                  disabled={isSendingMsg}
+                  className="w-full h-9 rounded-lg bg-brand text-[12px] font-semibold text-brand-foreground hover:bg-brand-dark disabled:opacity-60"
+                >
+                  {isSendingMsg ? "Sending…" : `Send ${msgMode === "sms" ? "SMS" : "Email"}`}
+                </button>
+              </div>
+            )}
+
             {/* ── PAYMENTS ── */}
             {activeTab === "payments" && (
               <div className="space-y-3">
-                <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
-                  <p className="text-[11px] text-muted-foreground mb-1">Credits Remaining</p>
-                  <p className="text-[24px] font-bold text-foreground">${customer.credits ?? 0}</p>
+                {/* Summary row */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Total Collected</p>
+                    <p className="text-[18px] font-bold text-emerald-500">
+                      ${paymentEvents.reduce((sum, e) => sum + (e.payment?.amount ?? 0), 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Credits Balance</p>
+                    <p className="text-[18px] font-bold text-foreground">${customer.credits ?? 0}</p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Full payment plans will appear here once the payment system is configured.
-                </p>
+
+                {loadingPayments ? (
+                  <p className="text-[12px] text-muted-foreground animate-pulse">Loading…</p>
+                ) : !paymentEvents.length ? (
+                  <p className="text-[12px] text-muted-foreground">No payments recorded yet.</p>
+                ) : (
+                  paymentEvents.map((evt) => {
+                    const METHOD_LABELS = { cash: "Cash", card: "Card", online: "Online", cheque: "Cheque", other: "Other" };
+                    const method = evt.payment?.method;
+                    return (
+                      <div key={evt._id} className="rounded-lg border border-border bg-muted/30 px-3 py-2.5 space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[12px] font-semibold text-foreground truncate leading-tight">{evt.title}</p>
+                          <p className="shrink-0 text-[14px] font-bold text-emerald-500 leading-tight">
+                            ${(evt.payment?.amount ?? 0).toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(evt.startDateTime).toLocaleDateString("en-US", {
+                              weekday: "short", month: "short", day: "numeric",
+                            })}{" · "}
+                            {new Date(evt.startDateTime).toLocaleTimeString("en-US", {
+                              hour: "numeric", minute: "2-digit", hour12: true,
+                            })}
+                          </p>
+                          {method && (
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-semibold text-muted-foreground uppercase">
+                              {METHOD_LABELS[method] ?? method}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             )}
 

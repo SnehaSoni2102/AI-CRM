@@ -229,7 +229,7 @@
 
 /* FullCalendar dark/light consistency for week/month views */
 .calendar-shell .fc-theme-standard {
-  --fc-border-color: hsl(var(--border) / 0.6);
+  --fc-border-color: hsl(var(--border) / 0.85);
   --fc-page-bg-color: hsl(var(--background));
   --fc-neutral-bg-color: hsl(var(--muted) / 0.4);
 }
@@ -238,7 +238,7 @@
 .calendar-shell .fc-theme-standard td,
 .calendar-shell .fc .fc-scrollgrid,
 .calendar-shell .fc .fc-scrollgrid-section > * {
-  border-color: hsl(var(--border) / 0.6) !important;
+  border-color: hsl(var(--border) / 0.85) !important;
 }
 
 .calendar-shell .fc .fc-col-header-cell,
@@ -261,9 +261,31 @@
   background: hsl(var(--muted) / 0.35);
 }
 
+/* Grid lines: solid major hour lines, dashed minor half-hour lines */
+.calendar-shell .fc .fc-timegrid-slot {
+  border-top: 1px solid hsl(var(--border) / 0.85) !important;
+}
+
 .calendar-shell .fc .fc-timegrid-slot-minor {
-  border-top-style: solid;
-  border-top-color: hsl(var(--border) / 0.7);
+  border-top-style: dashed !important;
+  border-top-color: hsl(var(--border) / 0.5) !important;
+}
+
+/* Vertical column grid lines within the time body */
+.calendar-shell .fc .fc-timegrid-col {
+  border-right: 1px solid hsl(var(--border) / 0.85) !important;
+}
+
+/* Month view day cell grid lines */
+.calendar-shell .fc .fc-daygrid-day {
+  border: 1px solid hsl(var(--border) / 0.85) !important;
+}
+
+/* Cursor pointer on time slots to hint clickability */
+.calendar-shell .fc .fc-timegrid-slot:hover,
+.calendar-shell .fc .fc-daygrid-day:hover {
+  background: hsl(var(--muted) / 0.3) !important;
+  cursor: pointer;
 }
 
 .calendar-shell .fc .fc-popover {

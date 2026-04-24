@@ -22,9 +22,43 @@ const EMPTY_FORM = {
   serviceCode: '',
   locationID: '',
   description: '',
-  countOnCalendar: '',
+  isChargeable: false,
+  serviceClass: '',
+  schedulingCode: '',
+  isGroup: false,
+  isSundry: false,
+  countOnCalendar: true,
   sortByOrder: '',
+  price: '',
   documents: [],
+}
+
+function RadioGroup({ label, value, onChange }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label>{label}</Label>
+      <div className="flex items-center gap-4 h-9">
+        <label className="flex items-center gap-1.5 cursor-pointer text-sm">
+          <input
+            type="radio"
+            checked={value === true}
+            onChange={() => onChange(true)}
+            className="accent-brand"
+          />
+          Yes
+        </label>
+        <label className="flex items-center gap-1.5 cursor-pointer text-sm">
+          <input
+            type="radio"
+            checked={value === false}
+            onChange={() => onChange(false)}
+            className="accent-brand"
+          />
+          No
+        </label>
+      </div>
+    </div>
+  )
 }
 
 export default function ServiceDialog({ open, onClose, service, onRefresh }) {
@@ -40,8 +74,14 @@ export default function ServiceDialog({ open, onClose, service, onRefresh }) {
         serviceCode: service.serviceCode || '',
         locationID: service.locationID?._id || service.locationID || '',
         description: service.description || '',
-        countOnCalendar: service.countOnCalendar ?? '',
+        isChargeable: service.isChargeable ?? false,
+        serviceClass: service.serviceClass || '',
+        schedulingCode: service.schedulingCode || '',
+        isGroup: service.isGroup ?? false,
+        isSundry: service.isSundry ?? false,
+        countOnCalendar: service.countOnCalendar ?? true,
         sortByOrder: service.sortByOrder ?? '',
+        price: service.price ?? '',
         documents: service.documents ? service.documents.map((d) => ({ name: d.name || '', url: d.url || '' })) : [],
       })
     } else {
@@ -88,8 +128,14 @@ export default function ServiceDialog({ open, onClose, service, onRefresh }) {
         serviceCode: form.serviceCode.trim(),
         locationID: form.locationID || undefined,
         description: form.description.trim() || undefined,
-        countOnCalendar: form.countOnCalendar === '' ? 0 : Number(form.countOnCalendar),
+        isChargeable: form.isChargeable,
+        serviceClass: form.serviceClass.trim() || undefined,
+        schedulingCode: form.schedulingCode.trim() || undefined,
+        isGroup: form.isGroup,
+        isSundry: form.isSundry,
+        countOnCalendar: form.countOnCalendar,
         sortByOrder: form.sortByOrder === '' ? 0 : Number(form.sortByOrder),
+        price: form.price === '' ? 0 : Number(form.price),
         documents: validDocs,
       }
 
@@ -111,79 +157,136 @@ export default function ServiceDialog({ open, onClose, service, onRefresh }) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Service' : 'Add Service'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="svc-name">Service Name *</Label>
-              <Input
-                id="svc-name"
-                placeholder="e.g. Ballet Class"
-                value={form.serviceName}
-                onChange={(e) => set('serviceName', e.target.value)}
+        <form onSubmit={handleSubmit} className="py-2">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+
+            {/* ── Left column ── */}
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="svc-name">Service Name *</Label>
+                  <Input
+                    id="svc-name"
+                    placeholder="Enter Service Name"
+                    value={form.serviceName}
+                    onChange={(e) => set('serviceName', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="svc-code">Service Code *</Label>
+                  <Input
+                    id="svc-code"
+                    placeholder="Enter Service Code"
+                    value={form.serviceCode}
+                    onChange={(e) => set('serviceCode', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <RadioGroup
+                label="Is Chargeable?"
+                value={form.isChargeable}
+                onChange={(v) => set('isChargeable', v)}
               />
+
+              <div className="flex flex-col gap-1.5">
+                <Label>Location</Label>
+                <LocationSelector
+                  value={form.locationID}
+                  onChange={(id) => set('locationID', id)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="svc-desc">Description</Label>
+                <Textarea
+                  id="svc-desc"
+                  placeholder="Optional description…"
+                  rows={4}
+                  value={form.description}
+                  onChange={(e) => set('description', e.target.value)}
+                  className="resize-none"
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="svc-code">Service Code *</Label>
-              <Input
-                id="svc-code"
-                placeholder="e.g. BAL-01"
-                value={form.serviceCode}
-                onChange={(e) => set('serviceCode', e.target.value)}
+
+            {/* ── Right column (Options) ── */}
+            <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-foreground">Options</h3>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="svc-class">Service Class</Label>
+                <Input
+                  id="svc-class"
+                  placeholder="Select"
+                  value={form.serviceClass}
+                  onChange={(e) => set('serviceClass', e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="svc-sched">Scheduling Code</Label>
+                <Input
+                  id="svc-sched"
+                  placeholder="Enter scheduling code"
+                  value={form.schedulingCode}
+                  onChange={(e) => set('schedulingCode', e.target.value)}
+                />
+              </div>
+
+              <RadioGroup
+                label="Is Group?"
+                value={form.isGroup}
+                onChange={(v) => set('isGroup', v)}
               />
-            </div>
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Location</Label>
-            <LocationSelector
-              value={form.locationID}
-              onChange={(id) => set('locationID', id)}
-            />
-          </div>
+              <RadioGroup
+                label="Is Sundry?"
+                value={form.isSundry}
+                onChange={(v) => set('isSundry', v)}
+              />
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="svc-desc">Description</Label>
-            <Textarea
-              id="svc-desc"
-              placeholder="Optional description…"
-              rows={3}
-              value={form.description}
-              onChange={(e) => set('description', e.target.value)}
-              className="resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="svc-count">Count on Calendar</Label>
-              <Input
-                id="svc-count"
-                type="number"
-                min="0"
-                placeholder="0"
+              <RadioGroup
+                label="Count on Calendar?"
                 value={form.countOnCalendar}
-                onChange={(e) => set('countOnCalendar', e.target.value)}
+                onChange={(v) => set('countOnCalendar', v)}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="svc-order">Sort by Order</Label>
-              <Input
-                id="svc-order"
-                type="number"
-                min="0"
-                placeholder="0"
-                value={form.sortByOrder}
-                onChange={(e) => set('sortByOrder', e.target.value)}
-              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="svc-order">Sort Order</Label>
+                  <Input
+                    id="svc-order"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={form.sortByOrder}
+                    onChange={(e) => set('sortByOrder', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="svc-price">Price ($)</Label>
+                  <Input
+                    id="svc-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.price}
+                    onChange={(e) => set('price', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          {/* Documents */}
+          <div className="flex flex-col gap-2 mt-6 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <Label>Documents</Label>
               <button
@@ -228,7 +331,7 @@ export default function ServiceDialog({ open, onClose, service, onRefresh }) {
             ))}
           </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
               Cancel
             </Button>

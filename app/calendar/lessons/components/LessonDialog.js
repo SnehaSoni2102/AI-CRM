@@ -18,7 +18,6 @@ import LocationSelector from '@/components/shared/LocationSelector'
 const EMPTY_FORM = {
   name: '',
   locationID: '',
-  credits: '',
   duration: '',
   unit: '',
   color: '#6366f1',
@@ -35,7 +34,6 @@ export default function LessonDialog({ open, onClose, lesson, onRefresh }) {
       setForm({
         name: lesson.name || '',
         locationID: typeof lesson.locationID === 'object' ? (lesson.locationID?._id || '') : (lesson.locationID || ''),
-        credits: lesson.credits ?? '',
         duration: lesson.duration ?? '',
         unit: lesson.unit ?? '',
         color: lesson.color || '#6366f1',
@@ -60,7 +58,6 @@ export default function LessonDialog({ open, onClose, lesson, onRefresh }) {
       const payload = {
         name: form.name,
         locationID: form.locationID,
-        credits: form.credits === '' ? 0 : Number(form.credits),
         duration: form.duration === '' ? 50 : Number(form.duration),
         unit: form.unit === '' ? 1 : Number(form.unit),
         color: form.color || undefined,
@@ -105,22 +102,6 @@ export default function LessonDialog({ open, onClose, lesson, onRefresh }) {
               value={form.locationID}
               onChange={(id) => set('locationID', id)}
             />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="lesson-credits">Credits</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
-              <Input
-                id="lesson-credits"
-                type="number"
-                min="0"
-                placeholder="0"
-                value={form.credits}
-                onChange={(e) => set('credits', e.target.value)}
-                className="pl-6"
-              />
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
